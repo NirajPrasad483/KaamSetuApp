@@ -1,38 +1,63 @@
-import React, { useState } from 'react';
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
-  TextInput,
-  Alert,
-} from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { KColors as  Colors, Spacing, Radius, Shadow } from '../constants/kaamsetuTheme';
-import { myRequests, workerProfiles } from '../constants/mockData';
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import {
+    KColors as Colors,
+    Radius,
+    Shadow,
+    Spacing,
+} from "../constants/kaamsetuTheme";
+import { myRequests, workerProfiles } from "../constants/mockData";
 
 function Avatar({ name, size = 70 }: { name: string; size?: number }) {
-  const initials = name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+  const initials = name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
   return (
-    <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
-      <Text style={{ color: '#fff', fontWeight: '700', fontSize: size * 0.32 }}>{initials}</Text>
+    <View
+      style={[
+        styles.avatar,
+        { width: size, height: size, borderRadius: size / 2 },
+      ]}
+    >
+      <Text style={{ color: "#fff", fontWeight: "700", fontSize: size * 0.32 }}>
+        {initials}
+      </Text>
     </View>
   );
 }
 
-function TabBar({ active, onSelect }: { active: 'status' | 'details'; onSelect: (t: 'status' | 'details') => void }) {
+function TabBar({
+  active,
+  onSelect,
+}: {
+  active: "status" | "details";
+  onSelect: (t: "status" | "details") => void;
+}) {
   return (
     <View style={styles.tabBar}>
-      {(['status', 'details'] as const).map((tab) => (
+      {(["status", "details"] as const).map((tab) => (
         <TouchableOpacity
           key={tab}
           style={[styles.tab, active === tab && styles.tabActive]}
           onPress={() => onSelect(tab)}
         >
-          <Text style={[styles.tabText, active === tab && styles.tabTextActive]}>
+          <Text
+            style={[styles.tabText, active === tab && styles.tabTextActive]}
+          >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </Text>
         </TouchableOpacity>
@@ -41,7 +66,13 @@ function TabBar({ active, onSelect }: { active: 'status' | 'details'; onSelect: 
   );
 }
 
-function StarRatingInput({ rating, onRate }: { rating: number; onRate: (r: number) => void }) {
+function StarRatingInput({
+  rating,
+  onRate,
+}: {
+  rating: number;
+  onRate: (r: number) => void;
+}) {
   return (
     <View style={styles.starRow}>
       {[1, 2, 3, 4, 5].map((i) => (
@@ -56,24 +87,34 @@ function StarRatingInput({ rating, onRate }: { rating: number; onRate: (r: numbe
 export default function JobStatusScreen() {
   const { jobId } = useLocalSearchParams<{ jobId: string }>();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'status' | 'details'>('status');
+  const [activeTab, setActiveTab] = useState<"status" | "details">("status");
   const [rating, setRating] = useState(0);
-  const [review, setReview] = useState('');
+  const [review, setReview] = useState("");
 
   const job = myRequests.find((j) => j.jobID === jobId);
-  const worker = job?.selectedWorkerID ? workerProfiles[job.selectedWorkerID] : null;
+  const worker = job?.selectedWorkerID
+    ? workerProfiles[job.selectedWorkerID]
+    : null;
 
   if (!job) {
     return (
       <SafeAreaView style={styles.safe}>
-        <View style={styles.centered}><Text>Job not found.</Text></View>
+        <View style={styles.centered}>
+          <Text>Job not found.</Text>
+        </View>
       </SafeAreaView>
     );
   }
 
   const handleSubmitRating = () => {
-    if (rating === 0) { Alert.alert('Please select a rating first.'); return; }
-    Alert.alert('Rating Submitted', `You rated ${worker?.name ?? 'worker'} ${rating} stars. Thank you!`);
+    if (rating === 0) {
+      Alert.alert("Please select a rating first.");
+      return;
+    }
+    Alert.alert(
+      "Rating Submitted",
+      `You rated ${worker?.name ?? "worker"} ${rating} stars. Thank you!`,
+    );
   };
 
   return (
@@ -90,8 +131,11 @@ export default function JobStatusScreen() {
 
       <TabBar active={activeTab} onSelect={setActiveTab} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {activeTab === 'status' ? (
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {activeTab === "status" ? (
           <>
             <View style={styles.statusBanner}>
               <Text style={styles.statusIcon}>🔄</Text>
@@ -104,12 +148,20 @@ export default function JobStatusScreen() {
                 <Text style={styles.workerName}>{worker.name}</Text>
                 <Text style={styles.workerTag}>{worker.workTag}</Text>
                 <View style={styles.workerMeta}>
-                  <Text style={styles.workerMetaText}>📍 {worker.location}</Text>
-                  <Text style={styles.workerMetaText}>🏆 {worker.experience}+ yrs</Text>
+                  <Text style={styles.workerMetaText}>
+                    📍 {worker.location}
+                  </Text>
+                  <Text style={styles.workerMetaText}>
+                    🏆 {worker.experience}+ yrs
+                  </Text>
                 </View>
                 <TouchableOpacity
                   style={styles.chatBtn}
-                  onPress={() => router.push(`/job-chat?workerId=${worker.workerID}&jobId=${jobId}`)}
+                  onPress={() =>
+                    router.push(
+                      `/job-chat?workerId=${worker.workerID}&jobId=${jobId}`,
+                    )
+                  }
                 >
                   <Text style={styles.chatBtnText}>💬 Chat</Text>
                 </TouchableOpacity>
@@ -117,7 +169,10 @@ export default function JobStatusScreen() {
             )}
 
             <View style={styles.rateCard}>
-              <TouchableOpacity style={styles.rateNowBtn} onPress={handleSubmitRating}>
+              <TouchableOpacity
+                style={styles.rateNowBtn}
+                onPress={handleSubmitRating}
+              >
                 <Text style={styles.rateNowText}>RATE NOW</Text>
               </TouchableOpacity>
               <StarRatingInput rating={rating} onRate={setRating} />
@@ -139,12 +194,15 @@ export default function JobStatusScreen() {
               <Text style={styles.detailsTitle}>Job Details</Text>
               <View style={styles.detailsTable}>
                 {[
-                  ['Job Type', job.jobType],
-                  ['Description', job.description],
-                  ['Location', job.location],
-                  ['Date Posted', job.datePosted],
-                  ['Schedule', `${job.schedule.date}, ${job.schedule.timeRange}`],
-                  ['Budget', `₹${job.budget.min} – ₹${job.budget.max}`],
+                  ["Job Type", job.jobType],
+                  ["Description", job.description],
+                  ["Location", job.location],
+                  ["Date Posted", job.datePosted],
+                  [
+                    "Schedule",
+                    `${job.schedule.date}, ${job.schedule.timeRange}`,
+                  ],
+                  ["Budget", `₹${job.budget.min} – ₹${job.budget.max}`],
                 ].map(([label, value]) => (
                   <View key={label} style={styles.detailRow}>
                     <Text style={styles.detailLabel}>{label}</Text>
@@ -169,7 +227,9 @@ export default function JobStatusScreen() {
                 </View>
                 <TouchableOpacity
                   style={styles.viewProfileBtn}
-                  onPress={() => router.push(`/worker-profile?workerId=${worker.workerID}`)}
+                  onPress={() =>
+                    router.push(`/worker-profile?workerId=${worker.workerID}`)
+                  }
                 >
                   <Text style={styles.viewProfileBtnText}>View Profile</Text>
                 </TouchableOpacity>
@@ -185,20 +245,25 @@ export default function JobStatusScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   header: {
     backgroundColor: Colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: Spacing.md,
     paddingVertical: 14,
   },
-  backBtn: { width: 36, justifyContent: 'center' },
-  backText: { color: Colors.white, fontSize: 28, fontWeight: '300', lineHeight: 32 },
-  headerTitle: { color: Colors.white, fontSize: 18, fontWeight: '700' },
+  backBtn: { width: 36, justifyContent: "center" },
+  backText: {
+    color: Colors.white,
+    fontSize: 28,
+    fontWeight: "300",
+    lineHeight: 32,
+  },
+  headerTitle: { color: Colors.white, fontSize: 18, fontWeight: "700" },
   tabBar: {
-    flexDirection: 'row',
+    flexDirection: "row",
     backgroundColor: Colors.white,
     borderBottomWidth: 1,
     borderColor: Colors.divider,
@@ -206,40 +271,49 @@ const styles = StyleSheet.create({
   tab: {
     flex: 1,
     paddingVertical: 14,
-    alignItems: 'center',
+    alignItems: "center",
     borderBottomWidth: 3,
-    borderBottomColor: 'transparent',
+    borderBottomColor: "transparent",
   },
   tabActive: { borderBottomColor: Colors.primary },
-  tabText: { fontSize: 15, fontWeight: '600', color: Colors.textMuted },
+  tabText: { fontSize: 15, fontWeight: "600", color: Colors.textMuted },
   tabTextActive: { color: Colors.primary },
   scrollContent: { padding: Spacing.md, gap: 16 },
   statusBanner: {
     backgroundColor: Colors.successLight,
     borderRadius: Radius.md,
     padding: Spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
     borderWidth: 1,
-    borderColor: '#A5D6A7',
+    borderColor: "#A5D6A7",
   },
   statusIcon: { fontSize: 22 },
-  statusLabel: { fontSize: 18, fontWeight: '800', color: Colors.success, letterSpacing: 1 },
+  statusLabel: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: Colors.success,
+    letterSpacing: 1,
+  },
   workerCard: {
     backgroundColor: Colors.cardBg,
     borderRadius: Radius.lg,
     padding: Spacing.lg,
-    alignItems: 'center',
+    alignItems: "center",
     gap: 8,
     borderWidth: 1,
     borderColor: Colors.cardBorder,
     ...Shadow.md,
   },
-  avatar: { backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center' },
-  workerName: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary },
-  workerTag: { fontSize: 14, color: Colors.primary, fontWeight: '600' },
-  workerMeta: { flexDirection: 'row', gap: 16 },
+  avatar: {
+    backgroundColor: Colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  workerName: { fontSize: 20, fontWeight: "800", color: Colors.textPrimary },
+  workerTag: { fontSize: 14, color: Colors.primary, fontWeight: "600" },
+  workerMeta: { flexDirection: "row", gap: 16 },
   workerMetaText: { fontSize: 13, color: Colors.textSecondary },
   chatBtn: {
     backgroundColor: Colors.primaryPale,
@@ -250,7 +324,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     marginTop: 4,
   },
-  chatBtnText: { color: Colors.primary, fontWeight: '700', fontSize: 15 },
+  chatBtnText: { color: Colors.primary, fontWeight: "700", fontSize: 15 },
   rateCard: {
     backgroundColor: Colors.cardBg,
     borderRadius: Radius.lg,
@@ -264,11 +338,16 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     borderRadius: Radius.md,
     paddingVertical: 14,
-    alignItems: 'center',
+    alignItems: "center",
   },
-  rateNowText: { color: Colors.white, fontWeight: '800', fontSize: 18, letterSpacing: 2 },
-  starRow: { flexDirection: 'row', justifyContent: 'center', gap: 8 },
-  star: { fontSize: 40, color: '#DDD' },
+  rateNowText: {
+    color: Colors.white,
+    fontWeight: "800",
+    fontSize: 18,
+    letterSpacing: 2,
+  },
+  starRow: { flexDirection: "row", justifyContent: "center", gap: 8 },
+  star: { fontSize: 40, color: "#DDD" },
   starActive: { color: Colors.starGold },
   reviewInput: {
     borderWidth: 1.5,
@@ -288,10 +367,20 @@ const styles = StyleSheet.create({
     borderColor: Colors.cardBorder,
     ...Shadow.sm,
   },
-  detailsTitle: { fontSize: 17, fontWeight: '800', color: Colors.textPrimary, marginBottom: 14 },
+  detailsTitle: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: Colors.textPrimary,
+    marginBottom: 14,
+  },
   detailsTable: { gap: 12 },
-  detailRow: { flexDirection: 'row', gap: 12 },
-  detailLabel: { width: 90, fontSize: 13, fontWeight: '700', color: Colors.textSecondary },
+  detailRow: { flexDirection: "row", gap: 12 },
+  detailLabel: {
+    width: 90,
+    fontSize: 13,
+    fontWeight: "700",
+    color: Colors.textSecondary,
+  },
   detailValue: { flex: 1, fontSize: 13, color: Colors.textPrimary },
   selectedWorkerCard: {
     backgroundColor: Colors.cardBg,
@@ -302,13 +391,17 @@ const styles = StyleSheet.create({
     ...Shadow.sm,
     gap: 14,
   },
-  selectedWorkerTitle: { fontSize: 17, fontWeight: '800', color: Colors.textPrimary },
-  selectedWorkerInner: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  selectedWorkerTitle: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: Colors.textPrimary,
+  },
+  selectedWorkerInner: { flexDirection: "row", alignItems: "center", gap: 14 },
   viewProfileBtn: {
     backgroundColor: Colors.primary,
     borderRadius: Radius.full,
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
-  viewProfileBtnText: { color: Colors.white, fontWeight: '700', fontSize: 15 },
+  viewProfileBtnText: { color: Colors.white, fontWeight: "700", fontSize: 15 },
 });

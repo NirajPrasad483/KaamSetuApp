@@ -2,32 +2,32 @@
 // import as: import { KColors as Colors, Spacing, Radius, Shadow } from '../constants/kaamsetuTheme';
 
 export const KColors = {
-  primary: '#2196F3',      // Primary blue
-  primaryLight: '#fff',
-  primaryPale: '#E3F2FD',   // Very light blue background
-  accent: '#0288D1',        // Accent blue
-  accentDark: '#0D47A1',    // Dark blue
+  primary: "#2196F3", // Primary blue
+  primaryLight: "#fff",
+  primaryPale: "#E3F2FD", // Very light blue background
+  accent: "#0288D1", // Accent blue
+  accentDark: "#0D47A1", // Dark blue
 
-  white: '#FFFFFF',
-  offWhite: '#F5F9FF',
-  background: '#EEF4FB',
+  white: "#FFFFFF",
+  offWhite: "#F5F9FF",
+  background: "#EEF4FB",
 
-  textPrimary: '#0D1B2A',
-  textSecondary: '#455A70',
-  textMuted: '#7A90A4',
+  textPrimary: "#0D1B2A",
+  textSecondary: "#455A70",
+  textMuted: "#7A90A4",
 
-  success: '#2E7D32',
-  successLight: '#E8F5E9',
-  warning: '#F57C00',
-  warningLight: '#FFF3E0',
-  error: '#C62828',
-  errorLight: '#FFEBEE',
+  success: "#2E7D32",
+  successLight: "#E8F5E9",
+  warning: "#F57C00",
+  warningLight: "#FFF3E0",
+  error: "#C62828",
+  errorLight: "#FFEBEE",
 
-  cardBg: '#FAFCFF',
-  cardBorder: '#BBDEFB',
-  divider: '#E3F2FD',
+  cardBg: "#FAFCFF",
+  cardBorder: "#BBDEFB",
+  divider: "#E3F2FD",
 
-  starGold: '#FFC107',
+  starGold: "#FFC107",
 };
 
 export const Spacing = {
@@ -49,14 +49,14 @@ export const Radius = {
 
 export const Shadow = {
   sm: {
-    shadowColor: '#1565C0',
+    shadowColor: "#1565C0",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 6,
     elevation: 3,
   },
   md: {
-    shadowColor: '#1565C0',
+    shadowColor: "#1565C0",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 12,

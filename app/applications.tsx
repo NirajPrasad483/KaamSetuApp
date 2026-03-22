@@ -1,27 +1,46 @@
-import React, { useState } from 'react';
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
-  TextInput,
-  Alert,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { KColors as Colors, Spacing, Radius, Shadow } from '../constants/kaamsetuTheme';
-import { myApplications, Application } from '../constants/mockData';
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import {
+    KColors as Colors,
+    Radius,
+    Shadow,
+    Spacing,
+} from "../constants/kaamsetuTheme";
 
-type TabType = 'accepted' | 'requested';
+import { myApplications } from "../constants/mockData";
 
-function StarRatingInput({ rating, onRate }: { rating: number; onRate: (r: number) => void }) {
+type TabType = "accepted" | "requested";
+
+function StarRatingInput({
+  rating,
+  onRate,
+}: {
+  rating: number;
+  onRate: (r: number) => void;
+}) {
   return (
-    <View style={{ flexDirection: 'row', gap: 6 }}>
+    <View style={{ flexDirection: "row", gap: 6 }}>
       {[1, 2, 3, 4, 5].map((i) => (
         <TouchableOpacity key={i} onPress={() => onRate(i)}>
-          <Text style={{ fontSize: 28, color: i <= rating ? Colors.starGold : '#DDD' }}>★</Text>
+          <Text
+            style={{
+              fontSize: 28,
+              color: i <= rating ? Colors.starGold : "#DDD",
+            }}
+          >
+            ★
+          </Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -29,37 +48,36 @@ function StarRatingInput({ rating, onRate }: { rating: number; onRate: (r: numbe
 }
 
 function StatusIcon({ status }: { status: string }) {
-  if (status === 'pending') return <Text style={{ fontSize: 18 }}>🕐</Text>;
-  if (status === 'rejected') return <Text style={{ fontSize: 18 }}>✖</Text>;
+  if (status === "pending") return <Text style={{ fontSize: 18 }}>🕐</Text>;
+  if (status === "rejected") return <Text style={{ fontSize: 18 }}>✖</Text>;
   return null;
 }
 
 export default function ApplicationsScreen() {
   const router = useRouter();
-  const [tab, setTab] = useState<TabType>('accepted');
+  const [tab, setTab] = useState<TabType>("accepted");
   const [rating, setRating] = useState(0);
-  const [review, setReview] = useState('');
+  const [review, setReview] = useState("");
 
-  const acceptedApps = myApplications.filter((a) => a.status === 'accepted');
-  const requestedApps = myApplications.filter((a) => a.status !== 'accepted');
+  const acceptedApps = myApplications.filter((a) => a.status === "accepted");
+  const requestedApps = myApplications.filter((a) => a.status !== "accepted");
 
   const handleEndWork = () => {
-    Alert.alert(
-      'End Work',
-      'Confirm that you have completed the job?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Yes, Complete', onPress: () => Alert.alert('Job marked as completed!') },
-      ]
-    );
+    Alert.alert("End Work", "Confirm that you have completed the job?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Yes, Complete",
+        onPress: () => Alert.alert("Job marked as completed!"),
+      },
+    ]);
   };
 
   const handleSubmitRating = () => {
     if (rating === 0) {
-      Alert.alert('Please select a rating.');
+      Alert.alert("Please select a rating.");
       return;
     }
-    Alert.alert('Thank you!', 'Your rating has been submitted.');
+    Alert.alert("Thank you!", "Your rating has been submitted.");
   };
 
   return (
@@ -77,7 +95,7 @@ export default function ApplicationsScreen() {
 
       {/* Tab Bar */}
       <View style={styles.tabBar}>
-        {(['accepted', 'requested'] as TabType[]).map((t) => (
+        {(["accepted", "requested"] as TabType[]).map((t) => (
           <TouchableOpacity
             key={t}
             style={[styles.tab, tab === t && styles.tabActive]}
@@ -87,8 +105,13 @@ export default function ApplicationsScreen() {
               {t.charAt(0).toUpperCase() + t.slice(1)}
             </Text>
             <View style={[styles.tabBadge, tab === t && styles.tabBadgeActive]}>
-              <Text style={[styles.tabBadgeText, tab === t && { color: Colors.white }]}>
-                {t === 'accepted' ? acceptedApps.length : requestedApps.length}
+              <Text
+                style={[
+                  styles.tabBadgeText,
+                  tab === t && { color: Colors.white },
+                ]}
+              >
+                {t === "accepted" ? acceptedApps.length : requestedApps.length}
               </Text>
             </View>
           </TouchableOpacity>
@@ -99,7 +122,7 @@ export default function ApplicationsScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {tab === 'accepted' ? (
+        {tab === "accepted" ? (
           acceptedApps.length === 0 ? (
             <View style={styles.empty}>
               <Text style={styles.emptyText}>No accepted applications.</Text>
@@ -116,18 +139,20 @@ export default function ApplicationsScreen() {
                 {/* Job Summary */}
                 <View style={styles.section}>
                   <Text style={styles.jobTitle}>{app.jobTitle}</Text>
-                  <Text style={styles.jobMeta}>Status: In Progress · {app.dateApplied}</Text>
+                  <Text style={styles.jobMeta}>
+                    Status: In Progress · {app.dateApplied}
+                  </Text>
                 </View>
 
                 {/* Job Details */}
                 <View style={styles.detailsBox}>
                   <Text style={styles.detailsHeading}>Job Details</Text>
                   {[
-                    ['Job Type', app.jobTitle.split(' at ')[0]],
-                    ['Description', app.description],
-                    ['Location', app.jobLocation],
-                    ['Date Posted', app.datePosted],
-                    ['Offered Pay', `₹${app.offeredPay}`],
+                    ["Job Type", app.jobTitle.split(" at ")[0]],
+                    ["Description", app.description],
+                    ["Location", app.jobLocation],
+                    ["Date Posted", app.datePosted],
+                    ["Offered Pay", `₹${app.offeredPay}`],
                   ].map(([k, v]) => (
                     <View key={k} style={styles.detailRow}>
                       <Text style={styles.detailKey}>{k}:</Text>
@@ -136,7 +161,10 @@ export default function ApplicationsScreen() {
                   ))}
                 </View>
 
-                <TouchableOpacity style={styles.endWorkBtn} onPress={handleEndWork}>
+                <TouchableOpacity
+                  style={styles.endWorkBtn}
+                  onPress={handleEndWork}
+                >
                   <Text style={styles.endWorkText}>End Work</Text>
                 </TouchableOpacity>
 
@@ -154,44 +182,55 @@ export default function ApplicationsScreen() {
                     numberOfLines={3}
                     textAlignVertical="top"
                   />
-                  <TouchableOpacity style={styles.submitRatingBtn} onPress={handleSubmitRating}>
+                  <TouchableOpacity
+                    style={styles.submitRatingBtn}
+                    onPress={handleSubmitRating}
+                  >
                     <Text style={styles.submitRatingText}>Submit Rating</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             ))
           )
+        ) : requestedApps.length === 0 ? (
+          <View style={styles.empty}>
+            <Text style={styles.emptyText}>
+              No pending/rejected applications.
+            </Text>
+          </View>
         ) : (
-          requestedApps.length === 0 ? (
-            <View style={styles.empty}>
-              <Text style={styles.emptyText}>No pending/rejected applications.</Text>
-            </View>
-          ) : (
-            requestedApps.map((app) => (
-              <View
-                key={app.applicationID}
-                style={[
-                  styles.requestedCard,
-                  app.status === 'rejected' && styles.requestedCardRejected,
-                ]}
-              >
-                <View style={styles.requestedTopRow}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.jobTitle}>{app.jobTitle}</Text>
-                    <Text style={[
+          requestedApps.map((app) => (
+            <View
+              key={app.applicationID}
+              style={[
+                styles.requestedCard,
+                app.status === "rejected" && styles.requestedCardRejected,
+              ]}
+            >
+              <View style={styles.requestedTopRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.jobTitle}>{app.jobTitle}</Text>
+                  <Text
+                    style={[
                       styles.statusText,
-                      { color: app.status === 'rejected' ? Colors.error : Colors.warning },
-                    ]}>
-                      Status: {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
-                    </Text>
-                  </View>
-                  <StatusIcon status={app.status} />
+                      {
+                        color:
+                          app.status === "rejected"
+                            ? Colors.error
+                            : Colors.warning,
+                      },
+                    ]}
+                  >
+                    Status:{" "}
+                    {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                  </Text>
                 </View>
-                <Text style={styles.jobMeta}>Applied: {app.dateApplied}</Text>
-                <Text style={styles.jobMeta}>Offered Pay: ₹{app.offeredPay}</Text>
+                <StatusIcon status={app.status} />
               </View>
-            ))
-          )
+              <Text style={styles.jobMeta}>Applied: {app.dateApplied}</Text>
+              <Text style={styles.jobMeta}>Offered Pay: ₹{app.offeredPay}</Text>
+            </View>
+          ))
         )}
 
         <View style={{ height: 40 }} />
@@ -204,34 +243,39 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
   header: {
     backgroundColor: Colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: Spacing.md,
     paddingVertical: 14,
   },
-  backBtn: { width: 36, justifyContent: 'center' },
-  backText: { color: Colors.white, fontSize: 28, fontWeight: '300', lineHeight: 32 },
-  headerTitle: { color: Colors.white, fontSize: 18, fontWeight: '700' },
+  backBtn: { width: 36, justifyContent: "center" },
+  backText: {
+    color: Colors.white,
+    fontSize: 28,
+    fontWeight: "300",
+    lineHeight: 32,
+  },
+  headerTitle: { color: Colors.white, fontSize: 18, fontWeight: "700" },
 
   tabBar: {
-    flexDirection: 'row',
+    flexDirection: "row",
     backgroundColor: Colors.white,
     borderBottomWidth: 1,
     borderColor: Colors.divider,
   },
   tab: {
     flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: 14,
     gap: 6,
     borderBottomWidth: 3,
-    borderBottomColor: 'transparent',
+    borderBottomColor: "transparent",
   },
   tabActive: { borderBottomColor: Colors.primary },
-  tabText: { fontSize: 15, fontWeight: '600', color: Colors.textMuted },
+  tabText: { fontSize: 15, fontWeight: "600", color: Colors.textMuted },
   tabTextActive: { color: Colors.primary },
   tabBadge: {
     backgroundColor: Colors.primaryPale,
@@ -240,18 +284,18 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   tabBadgeActive: { backgroundColor: Colors.primary },
-  tabBadgeText: { fontSize: 11, fontWeight: '700', color: Colors.primary },
+  tabBadgeText: { fontSize: 11, fontWeight: "700", color: Colors.primary },
 
   scrollContent: { padding: Spacing.md, gap: 14 },
 
-  empty: { padding: 60, alignItems: 'center' },
+  empty: { padding: 60, alignItems: "center" },
   emptyText: { color: Colors.textMuted, fontSize: 14 },
 
   // Accepted card
   acceptedCard: {
     backgroundColor: Colors.cardBg,
     borderRadius: Radius.lg,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderWidth: 1,
     borderColor: Colors.cardBorder,
     ...Shadow.md,
@@ -259,23 +303,23 @@ const styles = StyleSheet.create({
   },
   inProgressBanner: {
     backgroundColor: Colors.success,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 12,
     gap: 10,
   },
   inProgressIcon: { fontSize: 20 },
   inProgressText: {
     color: Colors.white,
-    fontWeight: '800',
+    fontWeight: "800",
     fontSize: 16,
     letterSpacing: 1,
   },
   section: { padding: Spacing.md, gap: 4 },
-  jobTitle: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
+  jobTitle: { fontSize: 15, fontWeight: "700", color: Colors.textPrimary },
   jobMeta: { fontSize: 12, color: Colors.textSecondary },
-  statusText: { fontSize: 12, fontWeight: '600' },
+  statusText: { fontSize: 12, fontWeight: "600" },
 
   detailsBox: {
     marginHorizontal: Spacing.md,
@@ -287,9 +331,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.divider,
   },
-  detailsHeading: { fontSize: 14, fontWeight: '800', color: Colors.textPrimary, marginBottom: 4 },
-  detailRow: { flexDirection: 'row', gap: 8 },
-  detailKey: { width: 80, fontSize: 12, fontWeight: '700', color: Colors.textSecondary },
+  detailsHeading: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: Colors.textPrimary,
+    marginBottom: 4,
+  },
+  detailRow: { flexDirection: "row", gap: 8 },
+  detailKey: {
+    width: 80,
+    fontSize: 12,
+    fontWeight: "700",
+    color: Colors.textSecondary,
+  },
   detailVal: { flex: 1, fontSize: 12, color: Colors.textPrimary },
 
   endWorkBtn: {
@@ -298,18 +352,18 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
     borderRadius: Radius.full,
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
-  endWorkText: { color: Colors.white, fontWeight: '700', fontSize: 15 },
+  endWorkText: { color: Colors.white, fontWeight: "700", fontSize: 15 },
 
   rateBox: {
     margin: Spacing.md,
     gap: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
-  rateTitle: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary },
+  rateTitle: { fontSize: 17, fontWeight: "700", color: Colors.textPrimary },
   reviewInput: {
-    width: '100%',
+    width: "100%",
     borderWidth: 1.5,
     borderColor: Colors.cardBorder,
     borderRadius: Radius.md,
@@ -325,7 +379,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 40,
   },
-  submitRatingText: { color: Colors.white, fontWeight: '700', fontSize: 14 },
+  submitRatingText: { color: Colors.white, fontWeight: "700", fontSize: 14 },
 
   // Requested cards
   requestedCard: {
@@ -339,11 +393,11 @@ const styles = StyleSheet.create({
   },
   requestedCardRejected: {
     backgroundColor: Colors.errorLight,
-    borderColor: '#FFCDD2',
+    borderColor: "#FFCDD2",
   },
   requestedTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
 });

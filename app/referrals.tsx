@@ -1,22 +1,27 @@
-import React from 'react';
+import { useRouter } from "expo-router";
+import React from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { KColors as Colors, Spacing, Radius, Shadow } from '../constants/kaamsetuTheme';
-import { referrals, Referral } from '../constants/mockData';
+    FlatList,
+    SafeAreaView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import {
+    KColors as Colors,
+    Radius,
+    Shadow,
+    Spacing,
+} from "../constants/kaamsetuTheme";
+import { Referral, referrals } from "../constants/mockData";
 
 function ReferralCard({ item }: { item: Referral }) {
   const initials = item.workerName
-    .split(' ')
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .slice(0, 2)
     .toUpperCase();
 
@@ -77,7 +82,8 @@ export default function ReferralsScreen() {
             <Text style={styles.emptyIcon}>🔗</Text>
             <Text style={styles.emptyText}>No referrals yet.</Text>
             <Text style={styles.emptySubtext}>
-              Refer a worker from the Live Jobs page to build your trusted network.
+              Refer a worker from the Live Jobs page to build your trusted
+              network.
             </Text>
           </View>
         }
@@ -90,15 +96,20 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
   header: {
     backgroundColor: Colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: Spacing.md,
     paddingVertical: 14,
   },
-  backBtn: { width: 36, justifyContent: 'center' },
-  backText: { color: Colors.white, fontSize: 28, fontWeight: '300', lineHeight: 32 },
-  headerTitle: { color: Colors.white, fontSize: 18, fontWeight: '700' },
+  backBtn: { width: 36, justifyContent: "center" },
+  backText: {
+    color: Colors.white,
+    fontSize: 28,
+    fontWeight: "300",
+    lineHeight: 32,
+  },
+  headerTitle: { color: Colors.white, fontSize: 18, fontWeight: "700" },
 
   infoBanner: {
     backgroundColor: Colors.primaryPale,
@@ -110,8 +121,8 @@ const styles = StyleSheet.create({
   infoBannerText: {
     fontSize: 13,
     color: Colors.primary,
-    fontWeight: '500',
-    textAlign: 'center',
+    fontWeight: "500",
+    textAlign: "center",
   },
 
   list: { padding: Spacing.md },
@@ -120,30 +131,30 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryPale,
     borderRadius: Radius.md,
     padding: Spacing.md,
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 14,
     borderWidth: 1,
     borderColor: Colors.cardBorder,
     ...Shadow.sm,
   },
-  cardLeft: { justifyContent: 'flex-start', paddingTop: 4 },
+  cardLeft: { justifyContent: "flex-start", paddingTop: 4 },
   avatar: {
     width: 44,
     height: 44,
     borderRadius: 22,
     backgroundColor: Colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
-  avatarText: { color: Colors.white, fontWeight: '700', fontSize: 16 },
+  avatarText: { color: Colors.white, fontWeight: "700", fontSize: 16 },
   cardBody: { flex: 1, gap: 5 },
   workerName: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: "800",
     color: Colors.textPrimary,
   },
   tagPill: {
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     backgroundColor: Colors.white,
     borderRadius: Radius.full,
     paddingHorizontal: 10,
@@ -151,18 +162,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.primary,
   },
-  tagText: { color: Colors.primary, fontSize: 12, fontWeight: '600' },
+  tagText: { color: Colors.primary, fontSize: 12, fontWeight: "600" },
   phoneLine: { fontSize: 13, color: Colors.textSecondary },
   referredFor: { fontSize: 12, color: Colors.textSecondary },
-  referredLabel: { fontWeight: '700', color: Colors.textPrimary },
+  referredLabel: { fontWeight: "700", color: Colors.textPrimary },
 
-  empty: { padding: 60, alignItems: 'center', gap: 10 },
+  empty: { padding: 60, alignItems: "center", gap: 10 },
   emptyIcon: { fontSize: 40 },
-  emptyText: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
+  emptyText: { fontSize: 16, fontWeight: "700", color: Colors.textPrimary },
   emptySubtext: {
     fontSize: 13,
     color: Colors.textMuted,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 20,
   },
 });
