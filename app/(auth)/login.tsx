@@ -49,7 +49,7 @@ export default function HomeScreen() {
 
     // ✅ Success
     setError("");
-    router.replace("/");
+    router.replace("/(tabs)/account");
   };
 
   return (
