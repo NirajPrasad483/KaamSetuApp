@@ -114,7 +114,12 @@ router.post("/login", async (req, res) => {
 // ================= RESET PASSWORD =================
 router.post("/reset-password", async (req, res) => {
   try {
-    const { email, newPassword } = req.body;
+    const { email, otp, newPassword } = req.body;
+
+    // 🔥 OTP check
+    if (otpStore[email] !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
 
     const user = await User.findOne({ email });
 
@@ -126,6 +131,8 @@ router.post("/reset-password", async (req, res) => {
 
     user.password = hashedPassword;
     await user.save();
+
+    delete otpStore[email]; // 🔥 clear OTP
 
     res.json({ message: "Password updated successfully" });
   } catch (err) {

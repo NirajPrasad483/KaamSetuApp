@@ -1,13 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function Register() {
@@ -49,6 +49,18 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    let interval: any;
+
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [timer]);
 
   const handleChange = (value: string, index: number) => {
     let newOtp = [...otp];
@@ -176,8 +188,14 @@ export default function Register() {
             />
           </View>
 
-          <TouchableOpacity style={styles.otpBtn} onPress={handleSendOTP}>
-            <Text style={{ fontSize: 12 }}>Verify OTP</Text>
+          <TouchableOpacity
+            style={styles.otpBtn}
+            onPress={handleSendOTP}
+            disabled={timer > 0}
+          >
+            <Text style={{ fontSize: 12 }}>
+              {timer > 0 ? `Wait ${timer}s` : "Verify OTP"}
+            </Text>
           </TouchableOpacity>
         </View>
 
