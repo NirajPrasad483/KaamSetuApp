@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+<<<<<<< HEAD
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -11,6 +12,13 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+=======
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+>>>>>>> c27e72e71a1575bbe9e1b07f76a35f11049780ea
 } from "react-native";
 
 export default function Register() {
@@ -52,6 +60,18 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    let interval: any;
+
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [timer]);
 
   const handleChange = (value: string, index: number) => {
     let newOtp = [...otp];
