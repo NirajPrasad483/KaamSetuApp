@@ -166,216 +166,207 @@ export default function Register() {
       setError("Server error");
     }
   };
-
+  
   return (
-    <LinearGradient colors={["#6c4ef6", "#4a6cf7"]} style={{ flex: 1 }}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
+  <LinearGradient colors={["#6c4ef6", "#4a6cf7"]} style={{ flex: 1 }}>
+    
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={{ flex: 1 }}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, padding: 20 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView
-          contentContainerStyle={styles.container}
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={styles.logo}>KaamSetu</Text>
-          <Text style={styles.subtitle}>
-            Connecting Workers with Opportunities
-          </Text>
+        <Text style={styles.logo}>KaamSetu</Text>
+        <Text style={styles.subtitle}>
+          Connecting Workers with Opportunities
+        </Text>
 
-          <View style={styles.card}>
-            <Text style={styles.title}>Create Your Account</Text>
+        <View style={styles.card}>
+          <Text style={styles.title}>Create Your Account</Text>
 
-            {/* Name */}
-            <Input
-              icon="person-outline"
-              placeholder="Full Name"
-              value={name}
-              onChange={setName}
-            />
+          {/* Name */}
+          <Input
+            icon="person-outline"
+            placeholder="Full Name"
+            value={name}
+            onChange={setName}
+          />
 
-            {/* Worker Checkbox */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginTop: 10,
-              }}
+          {/* Worker Checkbox */}
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }}>
+            <TouchableOpacity
+              onPress={() => setIsWorker(!isWorker)}
+              style={{ marginRight: 10 }}
             >
-              <TouchableOpacity
-                onPress={() => setIsWorker(!isWorker)}
-                style={{ marginRight: 10 }}
-              >
-                <Ionicons
-                  name={isWorker ? "checkbox" : "square-outline"}
-                  size={22}
-                  color="#4a6cf7"
-                />
-              </TouchableOpacity>
+              <Ionicons
+                name={isWorker ? "checkbox" : "square-outline"}
+                size={22}
+                color="#4a6cf7"
+              />
+            </TouchableOpacity>
+            <Text>I am a Worker</Text>
+          </View>
 
-              <Text>I am a Worker</Text>
+          {/* Email + OTP */}
+          <View style={styles.row}>
+            <View style={{ flex: 1 }}>
+              <Input
+                icon="mail-outline"
+                placeholder="Email"
+                value={email}
+                onChange={setEmail}
+              />
             </View>
 
-            {/* Email + OTP */}
-            <View style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <Input
-                  icon="mail-outline"
-                  placeholder="Email"
-                  value={email}
-                  onChange={setEmail}
-                />
+            <TouchableOpacity
+              style={styles.otpBtn}
+              onPress={handleSendOTP}
+              disabled={timer > 0}
+            >
+              <Text style={{ fontSize: 12 }}>
+                {timer > 0 ? `Wait ${timer}s` : "Verify OTP"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Resend OTP */}
+          {timer > 0 ? (
+            <Text style={{ textAlign: "center", marginTop: 5 }}>
+              Resend OTP in {timer}s
+            </Text>
+          ) : (
+            <TouchableOpacity onPress={handleSendOTP}>
+              <Text style={{ textAlign: "center", color: "#4a6cf7", marginTop: 5 }}>
+                Resend OTP
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* OTP */}
+          <Text style={styles.label}>Enter OTP</Text>
+
+          <View style={styles.otpContainer}>
+            {otp.map((digit, index) => (
+              <TextInput
+                key={index}
+                ref={(ref) => (inputs.current[index] = ref)}
+                style={styles.otpBox}
+                keyboardType="numeric"
+                maxLength={1}
+                value={digit}
+                onChangeText={(value) => handleChange(value, index)}
+                onKeyPress={({ nativeEvent }) =>
+                  handleKeyPress(nativeEvent.key, index)
+                }
+              />
+            ))}
+          </View>
+
+          {/* Password */}
+          <PasswordInput
+            value={password}
+            onChange={setPassword}
+            show={showPassword}
+            toggle={() => setShowPassword(!showPassword)}
+            placeholder="Set Password"
+          />
+
+          <PasswordInput
+            value={confirm}
+            onChange={setConfirm}
+            show={showConfirm}
+            toggle={() => setShowConfirm(!showConfirm)}
+            placeholder="Confirm Password"
+          />
+
+          {/* Address */}
+          <Input
+            icon="location-outline"
+            placeholder="Address (Optional)"
+            value={address}
+            onChange={setAddress}
+          />
+
+          {/* Worker Tags (only if worker) */}
+          {isWorker && (
+            <>
+              <Text style={styles.label}>Worker Tags</Text>
+
+              <View style={styles.tagContainer}>
+                {suggestions.map((item) => (
+                  <TouchableOpacity
+                    key={item}
+                    style={[
+                      styles.tag,
+                      selectedTags.includes(item) && {
+                        backgroundColor: "#4a6cf7",
+                      },
+                    ]}
+                    onPress={() => addTag(item)}
+                  >
+                    <Text style={{ color: "#fff" }}>{item}</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
 
-              <TouchableOpacity style={styles.otpBtn} onPress={handleSendOTP}>
-                <Text style={{ fontSize: 12 }}>Verify OTP</Text>
-              </TouchableOpacity>
-            </View>
+              <View style={styles.tagContainer}>
+                {selectedTags.map((tag) => (
+                  <View key={tag} style={styles.tag}>
+                    <Text style={{ color: "#fff" }}>{tag}</Text>
+                    <Text style={styles.remove} onPress={() => removeTag(tag)}>
+                      ✕
+                    </Text>
+                  </View>
+                ))}
+              </View>
 
-            {/* resend OTP */}
-            {timer > 0 ? (
-              <Text style={{ textAlign: "center", marginTop: 5 }}>
-                Resend OTP in {timer}s
-              </Text>
-            ) : (
-              <TouchableOpacity onPress={handleSendOTP}>
-                <Text
-                  style={{
-                    textAlign: "center",
-                    color: "#4a6cf7",
-                    marginTop: 5,
-                  }}
-                >
-                  Resend OTP
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            {/* OTP */}
-            <Text style={styles.label}>Enter OTP</Text>
-
-            <View style={styles.otpContainer}>
-              {otp.map((digit, index) => (
+              <View style={styles.inputContainer}>
+                <Ionicons name="pricetag-outline" size={20} />
                 <TextInput
-                  key={index}
-                  ref={(ref) => {
-                    inputs.current[index] = ref;
-                  }}
-                  style={styles.otpBox}
-                  keyboardType="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChangeText={(value) => handleChange(value, index)}
-                  onKeyPress={({ nativeEvent }) =>
-                    handleKeyPress(nativeEvent.key, index)
-                  }
+                  placeholder="Add your own skill"
+                  style={styles.input}
+                  value={tagInput}
+                  onChangeText={setTagInput}
+                  onSubmitEditing={() => addTag(tagInput)}
                 />
-              ))}
-            </View>
+              </View>
+            </>
+          )}
 
-            {/* Password */}
-            <PasswordInput
-              value={password}
-              onChange={setPassword}
-              show={showPassword}
-              toggle={() => setShowPassword(!showPassword)}
-              placeholder="Set Password"
-            />
+          {/* Phone */}
+          <Input
+            icon="call-outline"
+            placeholder="Phone Number"
+            value={phone}
+            onChange={setPhone}
+          />
 
-            {/* Confirm */}
-            <PasswordInput
-              value={confirm}
-              onChange={setConfirm}
-              show={showConfirm}
-              toggle={() => setShowConfirm(!showConfirm)}
-              placeholder="Confirm Password"
-            />
+          {/* Error */}
+          {error ? <Text style={styles.error}>{error}</Text> : null}
 
-            {/* Address */}
-            <Input
-              icon="location-outline"
-              placeholder="Address (Optional)"
-              value={address}
-              onChange={setAddress}
-            />
+          {/* Register */}
+          <TouchableOpacity onPress={handleRegister}>
+            <LinearGradient
+              colors={["#6c4ef6", "#4a6cf7"]}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>Register</Text>
+            </LinearGradient>
+          </TouchableOpacity>
 
-            {/* Tags */}
-            {isWorker && (
-              <>
-                <Text style={styles.label}>Worker Tags</Text>
+          <Text style={styles.footer}>
+            By registering, you agree to Terms & Privacy Policy
+          </Text>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
 
-                <View style={styles.tagContainer}>
-                  {suggestions.map((item) => (
-                    <TouchableOpacity
-                      key={item}
-                      style={[
-                        styles.tag,
-                        selectedTags.includes(item) && {
-                          backgroundColor: "#4a6cf7",
-                        },
-                      ]}
-                      onPress={() => addTag(item)}
-                    >
-                      <Text style={{ color: "#fff" }}>{item}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-
-                <View style={styles.tagContainer}>
-                  {selectedTags.map((tag) => (
-                    <View key={tag} style={styles.tag}>
-                      <Text style={{ color: "#fff" }}>{tag}</Text>
-                      <Text
-                        style={styles.remove}
-                        onPress={() => removeTag(tag)}
-                      >
-                        ✕
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-
-                <View style={styles.inputContainer}>
-                  <Ionicons name="pricetag-outline" size={20} />
-                  <TextInput
-                    placeholder="Add your own skill"
-                    style={styles.input}
-                    value={tagInput}
-                    onChangeText={setTagInput}
-                    onSubmitEditing={() => addTag(tagInput)}
-                  />
-                </View>
-              </>
-            )}
-            {/* Phone */}
-            <Input
-              icon="call-outline"
-              placeholder="Phone Number"
-              value={phone}
-              onChange={setPhone}
-            />
-
-            {/* Error */}
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-
-            {/* Register */}
-            <TouchableOpacity onPress={handleRegister}>
-              <LinearGradient
-                colors={["#6c4ef6", "#4a6cf7"]}
-                style={styles.button}
-              >
-                <Text style={styles.buttonText}>Register</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <Text style={styles.footer}>
-              By registering, you agree to Terms & Privacy Policy
-            </Text>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </LinearGradient>
-  );
-}
+  </LinearGradient>
+);
+  
 
 /* 🔥 Reusable */
 

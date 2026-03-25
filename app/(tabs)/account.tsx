@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import { useRouter, useFocusEffect } from "expo-router";
+import { useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -19,9 +20,113 @@ import {
   Shadow,
   Spacing,
 } from "../../constants/kaamsetuTheme";
+import { completedJobHistory, myRequests } from "../../constants/mockData";
+import { Image } from "react-native";
 import { myApplications, referrals } from "../../constants/mockData";
 
 const API_URL = "http://172.27.16.252:8000";
+
+// ─── Reusable Components ────────────────────────────────────────────────────
+
+function Avatar({
+  name,
+  profileImage,
+  size = 72,
+}: {
+  name: string;
+  profileImage?: string;
+  size?: number;
+}) {
+  const initials = name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return profileImage ? (
+    <Image
+      source={{ uri: profileImage }}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+      }}
+    />
+  ) : (
+    <View
+      style={[
+        styles.avatar,
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+        },
+      ]}
+    >
+      <Text style={[styles.avatarText, { fontSize: size * 0.35 }]}>
+        {initials}
+      </Text>
+    </View>
+  );
+}
+
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <View style={styles.starsRow}>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <Text
+          key={i}
+          style={{
+            color: i <= Math.round(rating) ? Colors.starGold : "#DDD",
+            fontSize: 14,
+          }}
+        >
+          ★
+        </Text>
+      ))}
+      <Text style={styles.ratingText}> ({rating})</Text>
+    </View>
+  );
+}
+
+function SectionHeader({ title }: { title: string }) {
+  return (
+    <View style={styles.sectionHeaderRow}>
+      <View style={styles.sectionAccent} />
+      <Text style={styles.sectionTitle}>{title}</Text>
+    </View>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; bg: string; color: string }> = {
+    pending: {
+      label: "Pending",
+      bg: Colors.warningLight,
+      color: Colors.warning,
+    },
+    in_progress: {
+      label: "Work in Progress",
+      bg: Colors.successLight,
+      color: Colors.success,
+    },
+    completed: { label: "Completed", bg: "#E3F2FD", color: "#1565C0" },
+    cancelled: {
+      label: "Cancelled",
+      bg: Colors.errorLight,
+      color: Colors.error,
+    },
+  };
+  const s = map[status] ?? map["pending"];
+  return (
+    <View style={[styles.badge, { backgroundColor: s.bg }]}>
+      <Text style={[styles.badgeText, { color: s.color }]}>{s.label}</Text>
+    </View>
+  );
+}
+
+
 
 type UserType = {
   _id: string;
@@ -29,6 +134,10 @@ type UserType = {
   email: string;
   phone: string;
   address?: string;
+  skills?: string[];
+  rating?: number;
+    profileImage?: string; // 🔥 ADD THIS
+
 };
 
 type JobType = {
@@ -85,6 +194,19 @@ export default function AccountScreen() {
       setLoading(false);
     }
   };
+ // ✅ REPLACE WITH THIS
+useFocusEffect(
+  useCallback(() => {
+    const loadUser = async () => {
+      const storedUser = await AsyncStorage.getItem("user");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    };
+    loadUser();
+  }, [])
+);
+  // if (!user) return null;
 
   useEffect(() => {
     loadAccountData();
@@ -118,13 +240,54 @@ export default function AccountScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.profileCard}>
-          <Text style={styles.profileName}>{user?.name || "User"}</Text>
-          <Text style={styles.profileText}>Email: {user?.email || "-"}</Text>
-          <Text style={styles.profileText}>Phone: {user?.phone || "-"}</Text>
-          <Text style={styles.profileText}>
-            Address: {user?.address?.trim() ? user.address : "-"}
-          </Text>
+<View style={styles.profileTop}>
+  <Avatar
+    name={user?.name || "User"}
+    profileImage={user?.profileImage}
+    size={72}
+  />
 
+  <View style={styles.profileInfo}>
+    <View style={styles.profileNameRow}>
+      <Text style={styles.profileName}>
+        {user?.name || "Loading..."}
+      </Text>
+
+      <TouchableOpacity
+        onPress={() => router.push("/update-profile")}
+        style={styles.editIcon}
+      >
+        <Text style={styles.editIconText}>✏️</Text>
+      </TouchableOpacity>
+    </View>
+
+    <StarRating rating={user?.rating || 0} />
+
+    {/* Skills */}
+    {user?.skills && user.skills.length > 0 && (
+      <View style={styles.tagsRow}>
+        {user.skills.map((tag) => (
+          <View key={tag} style={styles.tag}>
+            <Text style={styles.tagText}>{tag}</Text>
+          </View>
+        ))}
+      </View>
+    )}
+
+    {/* Extra details (from other branch) */}
+    <Text style={styles.profileText}>
+      Email: {user?.email || "-"}
+    </Text>
+    <Text style={styles.profileText}>
+      Phone: {user?.phone || "-"}
+    </Text>
+    <Text style={styles.profileText}>
+      Address: {user?.address?.trim() ? user.address : "-"}
+    </Text>
+
+  </View>
+</View>
+          
           <TouchableOpacity
             style={styles.primaryBtn}
             onPress={handleUpdateProfile}

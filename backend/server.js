@@ -1,3 +1,11 @@
+import "./config.js";
+// import mongoose from "mongoose";
+// import authRoutes from "./routes/auth.js";
+// import cors from "cors";
+// import express from "express";
+import dns from 'dns';
+dns.setServers(["1.1.1.1", "8.8.8.8"]);
+
 // server.js — updated with all routes
 import cors from "cors";
 import dotenv from "dotenv";
@@ -8,7 +16,6 @@ import jobRoutes from "./routes/jobRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js"; // ✅ NEW
 import chatRoutes from "./routes/chat.js"; // ✅ NEW
 
-dotenv.config();
 
 const app = express();
 
@@ -20,6 +27,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/applications", applicationRoutes); // ✅ NEW
 app.use("/api/chat", chatRoutes); // ✅ NEW
+
+app.use("/uploads", express.static("uploads"));
 
 app.get("/", (req, res) => {
     res.send("API is running...");
