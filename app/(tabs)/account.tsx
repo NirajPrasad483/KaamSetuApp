@@ -167,7 +167,7 @@ export default function AccountScreen() {
 
               <TouchableOpacity
                 style={styles.outlineBtn}
-                onPress={() => router.push(`/application-list?jobId=${job._id}`)}
+                onPress={() => router.push(`/applications?jobId=${job._id}`)}
               >
                 <Text style={styles.outlineBtnText}>View Applicants</Text>
               </TouchableOpacity>
