@@ -14,10 +14,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import {
-    KColors as Colors,
-    Radius
-} from "../constants/kaamsetuTheme";
+import { KColors as Colors, Radius } from "../constants/kaamsetuTheme";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -161,7 +158,7 @@ export default function UpdateProfileScreen() {
 
       // 🔥 CALL BACKEND
       const res = await fetch(
-        "http://172.24.197.206 :8000/api/auth/update-profile",
+        "http://172.24.202.171:8000/api/auth/update-profile",
         {
           method: "PUT",
           body: formData, // ❗ no headers

@@ -3,12 +3,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function Register() {
@@ -87,7 +87,7 @@ export default function Register() {
         return;
       }
 
-      const res = await fetch("http://172.24.197.206:8000/api/auth/send-otp", {
+      const res = await fetch("http://172.24.202.171:8000/api/auth/send-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -130,7 +130,7 @@ export default function Register() {
         return;
       }
 
-      const res = await fetch("http://172.24.197.206:8000/api/auth/register", {
+      const res = await fetch("http://172.24.202.171:8000/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
