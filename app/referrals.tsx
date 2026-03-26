@@ -1,19 +1,19 @@
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-    FlatList,
-    SafeAreaView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  FlatList,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import {
-    KColors as Colors,
-    Radius,
-    Shadow,
-    Spacing,
+  KColors as Colors,
+  Radius,
+  Shadow,
+  Spacing,
 } from "../constants/kaamsetuTheme";
 import { Referral, referrals } from "../constants/mockData";
 

@@ -1,10 +1,16 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
+<<<<<<< Updated upstream
 import React, { useCallback, useEffect, useState } from "react";
 import { RefreshControl } from "react-native";
+=======
+import React, { useCallback, useState } from "react";
+>>>>>>> Stashed changes
 import {
   ActivityIndicator,
+  Alert,
   Image,
+  RefreshControl,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -19,8 +25,12 @@ import {
   Shadow,
   Spacing,
 } from "../../constants/kaamsetuTheme";
-import { myApplications, referrals } from "../../constants/mockData";
+import { myApplications } from "../../constants/mockData";
 
+<<<<<<< Updated upstream
+=======
+// 🔥 Updated to your server IP
+>>>>>>> Stashed changes
 const API_URL = "http://172.27.16.252:8030";
 
 // ─── Reusable Components ────────────────────────────────────────────────────
@@ -40,25 +50,16 @@ function Avatar({
     .join("")
     .slice(0, 2)
     .toUpperCase();
-
   return profileImage ? (
     <Image
       source={{ uri: profileImage }}
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-      }}
+      style={{ width: size, height: size, borderRadius: size / 2 }}
     />
   ) : (
     <View
       style={[
         styles.avatar,
-        {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-        },
+        { width: size, height: size, borderRadius: size / 2 },
       ]}
     >
       <Text style={[styles.avatarText, { fontSize: size * 0.35 }]}>
@@ -99,7 +100,7 @@ function SectionHeader({ title }: { title: string }) {
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; bg: string; color: string }> = {
     pending: {
-      label: "Pending",
+      label: "pending",
       bg: Colors.warningLight,
       color: Colors.warning,
     },
@@ -131,9 +132,8 @@ type UserType = {
   address?: string;
   skills?: string[];
   rating?: number;
-  profileImage?: string; // 🔥 ADD THIS
+  profileImage?: string;
 };
-
 type JobType = {
   _id: string;
   category: string;
@@ -145,6 +145,8 @@ type JobType = {
   noBudget?: boolean;
 };
 
+// ─── Main Screen ──────────────────────────────────────────────────────────
+
 export default function AccountScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
@@ -154,6 +156,7 @@ export default function AccountScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
+<<<<<<< Updated upstream
 
     await loadAccountData();
 
@@ -164,6 +167,16 @@ export default function AccountScreen() {
   
   const loadAccountData = async () => {
   setLoading(true); // 🔥 ADD THIS
+=======
+    await loadAccountData();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 500);
+  };
+
+  const loadAccountData = async () => {
+    setLoading(true);
+>>>>>>> Stashed changes
     try {
       const token = await AsyncStorage.getItem("token");
       const userString = await AsyncStorage.getItem("user");
@@ -179,14 +192,11 @@ export default function AccountScreen() {
       const requestsRes = await fetch(
         `${API_URL}/api/jobs/my-requests/${parsedUser._id}`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         },
       );
 
       const requestsData = await requestsRes.json();
-
       if (requestsRes.ok && Array.isArray(requestsData)) {
         setMyRequests(requestsData);
       } else {
@@ -199,6 +209,7 @@ export default function AccountScreen() {
       setLoading(false);
     }
   };
+<<<<<<< Updated upstream
   // ✅ REPLACE WITH THIS
     useFocusEffect(
       useCallback(() => {
@@ -212,6 +223,47 @@ export default function AccountScreen() {
   // if (!user) return null;
 
 
+=======
+
+  const handleDeleteJob = async (jobId: string) => {
+    Alert.alert(
+      "Delete Job",
+      "Are you sure you want to delete this job post?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem("token");
+              const res = await fetch(`${API_URL}/api/jobs/${jobId}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              if (res.ok) {
+                onRefresh();
+              } else {
+                Alert.alert(
+                  "Error",
+                  "Could not delete. It might be in progress.",
+                );
+              }
+            } catch (err) {
+              console.log("Delete error:", err);
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      onRefresh();
+    }, []),
+  );
+>>>>>>> Stashed changes
 
   const handleLogout = async () => {
     await AsyncStorage.removeItem("token");
@@ -219,46 +271,42 @@ export default function AccountScreen() {
     router.replace("/(auth)/login");
   };
 
-  const handleUpdateProfile = () => {
-    router.push("/update-profile");
-  };
-
-  const handleOpenApplications = () => {
-    router.push("/applications");
-  };
-
-  const handleOpenReferrals = () => {
-    router.push("/referrals");
-  };
+  const activeRequests = myRequests.filter((j) => j.status !== "completed");
+  const historyRequests = myRequests.filter((j) => j.status === "completed");
 
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
-
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Account</Text>
       </View>
 
       <ScrollView
+<<<<<<< Updated upstream
                   contentContainerStyle={styles.scrollContent}
                   refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                   }
                 >
+=======
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* Profile Card Section */}
+>>>>>>> Stashed changes
         <View style={styles.profileCard}>
           <View style={styles.profileTop}>
             <Avatar
               name={user?.name || "User"}
               profileImage={user?.profileImage}
-              size={72}
             />
-
             <View style={styles.profileInfo}>
               <View style={styles.profileNameRow}>
                 <Text style={styles.profileName}>
                   {user?.name || "Loading..."}
                 </Text>
-
                 <TouchableOpacity
                   onPress={() => router.push("/update-profile")}
                   style={styles.editIcon}
@@ -266,69 +314,57 @@ export default function AccountScreen() {
                   <Text style={styles.editIconText}>✏️</Text>
                 </TouchableOpacity>
               </View>
-
               <StarRating rating={user?.rating || 0} />
-
-              {/* Skills */}
-              {user?.skills && user.skills.length > 0 && (
-                <View style={styles.tagsRow}>
-                  {user.skills.map((tag) => (
-                    <View key={tag} style={styles.tag}>
-                      <Text style={styles.tagText}>{tag}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-
-              {/* Extra details (from other branch) */}
-              <Text style={styles.profileText}>
-                Email: {user?.email || "-"}
-              </Text>
               <Text style={styles.profileText}>
                 Phone: {user?.phone || "-"}
-              </Text>
-              <Text style={styles.profileText}>
-                Address: {user?.address?.trim() ? user.address : "-"}
               </Text>
             </View>
           </View>
 
           <TouchableOpacity
             style={styles.primaryBtn}
-            onPress={handleUpdateProfile}
+            onPress={() => router.push("/update-profile")}
           >
             <Text style={styles.primaryBtnText}>Update Profile</Text>
           </TouchableOpacity>
 
+<<<<<<< Updated upstream
           
+=======
+          <TouchableOpacity
+            style={styles.testChatBtn}
+            onPress={() =>
+              router.push("/job-chat?chatId=69c39b7dcf8d1328e3f5ffd1")
+            }
+          >
+            <Text style={styles.testChatBtnText}>💬 Open Test Chat</Text>
+          </TouchableOpacity>
+>>>>>>> Stashed changes
         </View>
 
-        <Text style={styles.sectionTitle}>My Requests (Current)</Text>
-
-        {loading ? (
-          <View style={styles.centered}>
-            <ActivityIndicator size="large" color={Colors.primary} />
-          </View>
-        ) : myRequests.length === 0 ? (
+        {/* ─── MY JOB REQUESTS (Active) ─── */}
+        <SectionHeader title="My Job Requests" />
+        {loading && !refreshing ? (
+          <ActivityIndicator color={Colors.primary} style={{ marginTop: 20 }} />
+        ) : activeRequests.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>No requests found.</Text>
+            <Text style={styles.emptyText}>No active requests found.</Text>
           </View>
         ) : (
-          myRequests.map((job) => (
+          activeRequests.map((job) => (
             <View key={job._id} style={styles.requestCard}>
-              <Text style={styles.requestTitle}>{job.category}</Text>
-              <Text style={styles.requestSub}>{job.description}</Text>
-              <Text style={styles.requestSub}>Address: {job.address}</Text>
-              <Text style={styles.requestSub}>Status: {job.status}</Text>
-
-              {job.noBudget ? (
-                <Text style={styles.requestSub}>Budget: Not specified</Text>
-              ) : (
-                <Text style={styles.requestSub}>
-                  Budget: ₹{job.minBudget || 0} - ₹{job.maxBudget || 0}
-                </Text>
-              )}
-
+              <View style={styles.cardHeader}>
+                <Text style={styles.requestTitle}>{job.category}</Text>
+                {job.status === "pending" && (
+                  <TouchableOpacity onPress={() => handleDeleteJob(job._id)}>
+                    <Text style={{ fontSize: 20 }}>🗑️</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+              <Text style={styles.requestSub} numberOfLines={2}>
+                {job.description}
+              </Text>
+              <StatusBadge status={job.status} />
               <TouchableOpacity
                 style={styles.outlineBtn}
                 onPress={() => router.push(`/applications?jobId=${job._id}`)}
@@ -339,8 +375,8 @@ export default function AccountScreen() {
           ))
         )}
 
-        <Text style={styles.sectionTitle}>My Applications</Text>
-
+        {/* ─── MY APPLICATIONS ─── */}
+        <SectionHeader title="My Applications" />
         {myApplications.length === 0 ? (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyText}>No applications found.</Text>
@@ -348,38 +384,42 @@ export default function AccountScreen() {
         ) : (
           <TouchableOpacity
             style={styles.quickCard}
-            onPress={handleOpenApplications}
+            onPress={() => router.push("/applications")}
           >
-            <Text style={styles.quickCardTitle}>Applications</Text>
+            <Text style={styles.quickCardTitle}>Track Applications</Text>
             <Text style={styles.quickCardSub}>
-              {myApplications.length} application(s) available
+              {myApplications.length} ongoing application(s)
             </Text>
           </TouchableOpacity>
         )}
 
-        <Text style={styles.sectionTitle}>Referrals</Text>
-
-        {referrals.length === 0 ? (
+        {/* ─── HISTORY ─── */}
+        <SectionHeader title="History" />
+        {historyRequests.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>No referrals found.</Text>
+            <Text style={styles.emptyText}>No past history.</Text>
           </View>
         ) : (
-          <TouchableOpacity
-            style={styles.quickCard}
-            onPress={handleOpenReferrals}
-          >
-            <Text style={styles.quickCardTitle}>Referrals</Text>
-            <Text style={styles.quickCardSub}>
-              {referrals.length} referral item(s) available
-            </Text>
-          </TouchableOpacity>
+          historyRequests.map((job) => (
+            <View
+              key={job._id}
+              style={[
+                styles.requestCard,
+                { opacity: 0.6, backgroundColor: "#f9f9f9" },
+              ]}
+            >
+              <Text style={styles.requestTitle}>
+                {job.category} (Completed)
+              </Text>
+              <StatusBadge status="completed" />
+            </View>
+          ))
         )}
 
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
           <Text style={styles.logoutBtnText}>Logout</Text>
         </TouchableOpacity>
-
-        <View style={{ height: 20 }} />
+        <View style={{ height: 30 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -392,15 +432,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 16,
   },
-  headerTitle: {
-    color: Colors.white,
-    fontSize: 22,
-    fontWeight: "700",
-  },
-  scrollContent: {
-    padding: Spacing.md,
-    gap: 14,
-  },
+  headerTitle: { color: Colors.white, fontSize: 22, fontWeight: "700" },
+  scrollContent: { padding: Spacing.md, gap: 14 },
   centered: {
     paddingVertical: 28,
     alignItems: "center",
@@ -415,42 +448,24 @@ const styles = StyleSheet.create({
     ...Shadow.md,
     gap: 12,
   },
-  profileName: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: Colors.textPrimary,
-  },
-  profileText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
+  profileName: { fontSize: 20, fontWeight: "800", color: Colors.textPrimary },
+  profileText: { fontSize: 14, color: Colors.textSecondary },
   primaryBtn: {
     backgroundColor: Colors.primary,
     borderRadius: Radius.full,
     paddingVertical: 12,
     alignItems: "center",
   },
-  primaryBtnText: {
-    color: Colors.white,
-    fontWeight: "700",
-  },
+  primaryBtnText: { color: Colors.white, fontWeight: "700" },
   testChatBtn: {
-    backgroundColor: "green",
+    backgroundColor: "#28a745",
     paddingVertical: 12,
     borderRadius: Radius.md,
     alignItems: "center",
+    marginTop: 5,
   },
-  testChatBtnText: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 15,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: Colors.textPrimary,
-    marginTop: 6,
-  },
+  testChatBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
+  sectionTitle: { fontSize: 18, fontWeight: "800", color: Colors.textPrimary },
   emptyCard: {
     backgroundColor: Colors.cardBg,
     borderRadius: Radius.lg,
@@ -458,10 +473,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.cardBorder,
   },
-  emptyText: {
-    fontSize: 15,
-    color: Colors.textMuted,
-  },
+  emptyText: { fontSize: 15, color: Colors.textMuted },
   requestCard: {
     backgroundColor: Colors.cardBg,
     borderRadius: Radius.lg,
@@ -471,15 +483,13 @@ const styles = StyleSheet.create({
     ...Shadow.md,
     gap: 6,
   },
-  requestTitle: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: Colors.textPrimary,
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  requestSub: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
+  requestTitle: { fontSize: 17, fontWeight: "700", color: Colors.textPrimary },
+  requestSub: { fontSize: 14, color: Colors.textSecondary },
   outlineBtn: {
     marginTop: 10,
     borderWidth: 1.5,
@@ -488,10 +498,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: "center",
   },
-  outlineBtnText: {
-    color: Colors.primary,
-    fontWeight: "700",
-  },
+  outlineBtnText: { color: Colors.primary, fontWeight: "700" },
   quickCard: {
     backgroundColor: Colors.cardBg,
     borderRadius: Radius.lg,
@@ -505,26 +512,21 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: Colors.textPrimary,
   },
-  quickCardSub: {
-    marginTop: 6,
-    fontSize: 12,
-    color: Colors.textSecondary,
-  },
+  quickCardSub: { marginTop: 6, fontSize: 12, color: Colors.textSecondary },
   logoutBtn: {
     backgroundColor: "#D9534F",
     borderRadius: Radius.full,
     paddingVertical: 12,
     alignItems: "center",
+    marginTop: 10,
   },
-  logoutBtnText: {
-    color: Colors.white,
-    fontWeight: "700",
-  },
+  logoutBtnText: { color: Colors.white, fontWeight: "700" },
   avatar: {
     backgroundColor: Colors.primary,
     justifyContent: "center",
     alignItems: "center",
   },
+<<<<<<< Updated upstream
 
   avatarText: {
     color: "#fff",
@@ -553,11 +555,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
+=======
+  avatarText: { color: "#fff", fontWeight: "bold" },
+  starsRow: { flexDirection: "row", alignItems: "center", marginTop: 4 },
+  ratingText: { marginLeft: 5, fontSize: 12, color: Colors.textSecondary },
+  profileTop: { flexDirection: "row", alignItems: "center" },
+  profileInfo: { marginLeft: 12, flex: 1 },
+>>>>>>> Stashed changes
   profileNameRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
+<<<<<<< Updated upstream
 
   editIcon: {
     marginLeft: 8,
@@ -573,6 +583,11 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 
+=======
+  editIcon: { marginLeft: 8 },
+  editIconText: { fontSize: 16 },
+  tagsRow: { flexDirection: "row", flexWrap: "wrap", marginTop: 5 },
+>>>>>>> Stashed changes
   tag: {
     backgroundColor: Colors.primary,
     paddingHorizontal: 8,
@@ -581,6 +596,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
     marginTop: 5,
   },
+<<<<<<< Updated upstream
 
   tagText: {
     color: "#fff",
@@ -592,6 +608,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
+=======
+  tagText: { color: "#fff", fontSize: 12 },
+  sectionHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+  },
+>>>>>>> Stashed changes
   sectionAccent: {
     width: 4,
     height: 16,
@@ -605,9 +629,13 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     marginTop: 6,
   },
+<<<<<<< Updated upstream
 
   badgeText: {
     fontSize: 12,
     fontWeight: "600",
   },
+=======
+  badgeText: { fontSize: 11, fontWeight: "700" },
+>>>>>>> Stashed changes
 });
