@@ -73,11 +73,11 @@ export default function WorkerProfileScreen() {
             Alert.alert(
               "Success",
               "Applicant accepted! The job is now in progress.",
-              [{ text: "OK", onPress: () => router.replace("/(tabs)") }]
+              [{ text: "OK", onPress: () => router.replace("/(tabs)") }],
             );
           },
         },
-      ]
+      ],
     );
   };
 

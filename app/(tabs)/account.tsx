@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { RefreshControl } from "react-native";
 import {
   ActivityIndicator,
   Image,
@@ -18,9 +19,11 @@ import {
   Shadow,
   Spacing,
 } from "../../constants/kaamsetuTheme";
-import { myApplications } from "../../constants/mockData";
+
 
 const API_URL = "http://172.27.16.252:8030";
+
+// ─── Reusable Components ────────────────────────────────────────────────────
 
 function Avatar({
   name,
@@ -159,13 +162,25 @@ type ReferralType = {
 
 export default function AccountScreen() {
   const router = useRouter();
-
+  const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState<UserType | null>(null);
   const [myRequests, setMyRequests] = useState<JobType[]>([]);
   const [myReferrals, setMyReferrals] = useState<ReferralType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [myApplications, setMyApplications] = useState<any[]>([]);
 
-  const loadAccountData = useCallback(async () => {
+  const onRefresh = async () => {
+    setRefreshing(true);
+
+    await loadAccountData();
+
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 500); // smooth feel
+  };
+  
+  const loadAccountData = async () => {
+  setLoading(true); // 🔥 ADD THIS
     try {
       setLoading(true);
 
@@ -195,6 +210,14 @@ export default function AccountScreen() {
         }),
       ]);
 
+      const appsRes = await fetch(`${API_URL}/api/applications/my-applications`, {
+  headers: { Authorization: `Bearer ${token}` },
+});
+const appsData = await appsRes.json();
+if (appsRes.ok) {
+  setMyApplications(appsData.applications || []);
+}
+
       const requestsData = await requestsRes.json();
       const referralsData = await referralsRes.json();
 
@@ -216,13 +239,20 @@ export default function AccountScreen() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
+  // ✅ REPLACE WITH THIS
+    useFocusEffect(
+      useCallback(() => {
+        onRefresh();
 
-  useFocusEffect(
-    useCallback(() => {
-      loadAccountData();
-    }, [loadAccountData])
-  );
+        return () => {
+          // optional cleanup (safe)
+        };
+      }, [])
+    );
+  // if (!user) return null;
+
+
 
   const handleLogout = async () => {
     await AsyncStorage.removeItem("token");
@@ -250,7 +280,12 @@ export default function AccountScreen() {
         <Text style={styles.headerTitle}>Account</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+                  contentContainerStyle={styles.scrollContent}
+                  refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                  }
+                >
         <View style={styles.profileCard}>
           <View style={styles.profileTop}>
             <Avatar
@@ -303,6 +338,8 @@ export default function AccountScreen() {
           >
             <Text style={styles.primaryBtnText}>Update Profile</Text>
           </TouchableOpacity>
+
+          
         </View>
 
         <SectionHeader title="My Requests (Current)" />
@@ -343,21 +380,24 @@ export default function AccountScreen() {
 
         <SectionHeader title="My Applications" />
 
-        {myApplications.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>No applications found.</Text>
-          </View>
-        ) : (
-          <TouchableOpacity
-            style={styles.quickCard}
-            onPress={handleOpenApplications}
-          >
-            <Text style={styles.quickCardTitle}>Applications</Text>
-            <Text style={styles.quickCardSub}>
-              {myApplications.length} application(s) available
-            </Text>
-          </TouchableOpacity>
-        )}
+        <Text style={styles.sectionTitle}>My Applications</Text>
+
+{myApplications.length === 0 ? (
+  <View style={styles.emptyCard}>
+    <Text style={styles.emptyText}>No applications found.</Text>
+  </View>
+) : (
+  myApplications.map((app) => (
+    <View key={app._id} style={styles.requestCard}>
+      <Text style={styles.requestTitle}>{app.jobId?.category}</Text>
+      <Text style={styles.requestSub}>Status: {app.status}</Text>
+      <Text style={styles.requestSub}>Expected Pay: ₹{app.expectedPay}</Text>
+      <Text style={styles.requestSub}>
+        Applied: {new Date(app.createdAt).toLocaleDateString()}
+      </Text>
+    </View>
+  ))
+)}
 
         <SectionHeader title="Referred Workers" />
 
@@ -606,5 +646,105 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 12,
     color: Colors.textSecondary,
+  },
+  logoutBtn: {
+    backgroundColor: "#D9534F",
+    borderRadius: Radius.full,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  logoutBtnText: {
+    color: Colors.white,
+    fontWeight: "700",
+  },
+  avatar: {
+    backgroundColor: Colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  avatarText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+
+  starsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+
+  ratingText: {
+    marginLeft: 5,
+    fontSize: 12,
+    color: Colors.textSecondary,
+  },
+
+  profileTop: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  profileInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+
+  profileNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  editIcon: {
+    marginLeft: 8,
+  },
+
+  editIconText: {
+    fontSize: 16,
+  },
+
+  tagsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 5,
+  },
+
+  tag: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginRight: 5,
+    marginTop: 5,
+  },
+
+  tagText: {
+    color: "#fff",
+    fontSize: 12,
+  },
+
+  sectionHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  sectionAccent: {
+    width: 4,
+    height: 16,
+    backgroundColor: Colors.primary,
+    marginRight: 6,
+  },
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: "flex-start",
+    marginTop: 6,
+  },
+
+  badgeText: {
+    fontSize: 12,
+    fontWeight: "600",
   },
 });
