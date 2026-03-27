@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
+import { Base_Url } from "../constants/api";
 import {
   ActivityIndicator,
   FlatList,
@@ -18,7 +19,7 @@ import {
   Spacing,
 } from "../constants/kaamsetuTheme";
 
-const BASE_URL = "http://172.27.16.252:8030/api";
+const BASE_URL = "${Base_Url}/api";
 
 type ReferralItem = {
   _id: string;

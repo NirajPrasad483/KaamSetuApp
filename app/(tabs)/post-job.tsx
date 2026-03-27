@@ -16,7 +16,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { BASE_URL } from "../../constants/Config"; // ✅ Added
+// import { BASE_URL } from "../../constants/Config";
+import { Base_Url } from "../../constants/api"; // ✅ Added
 
 import { KColors as Colors, Spacing } from "../../constants/kaamsetuTheme";
 
@@ -139,7 +140,7 @@ export default function PostJob() {
       };
 
       // 3. Send to Server
-      const response = await fetch(`${BASE_URL}/api/jobs/create`, {
+      const response = await fetch(`${Base_Url}/api/jobs/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

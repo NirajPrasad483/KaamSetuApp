@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
+import { Base_Url } from "../constants/api";
 import {
     ActivityIndicator,
     Alert,
@@ -56,7 +57,7 @@ export default function JobChatScreen() {
       }
 
       const res = await fetch(
-        `http://172.27.16.252:8030/api/chat/${chatId}/messages`,
+        `${Base_Url}/api/chat/${chatId}/messages`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -97,7 +98,7 @@ export default function JobChatScreen() {
       }
 
       const res = await fetch(
-        `http://172.27.16.252:8030/api/chat/${chatId}/send`,
+        `${Base_Url}/api/chat/${chatId}/send`,
         {
           method: "POST",
           headers: {

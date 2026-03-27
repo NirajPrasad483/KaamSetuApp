@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useState } from "react";
+import { Base_Url } from "../../constants/api";
 import {
   StyleSheet,
   Text,
@@ -49,7 +50,7 @@ export default function HomeScreen() {
     try {
       setError("");
 
-      const res = await fetch("http://172.27.16.252:8030/api/auth/login", {
+      const res = await fetch("${Base_Url}/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
