@@ -315,6 +315,10 @@ export default function LiveJobsScreen() {
   // FILTER LOGIC
   // ─────────────────────────────────────────────────────────────────────────
   const filteredJobs = jobs.filter((job) => {
+    // ── Hide completed / cancelled jobs ──────────────────────────────────────
+    const s = (job.status || "").trim().toLowerCase();
+    if (s === "completed" || s === "cancelled") return false;
+
     // Category
     if (filters.category !== "All" && job.category !== filters.category)
       return false;
@@ -329,7 +333,7 @@ export default function LiveJobsScreen() {
       if (filters.pay === "₹1000+" && max < 1000) return false;
     }
 
-    // Schedule (simple string match)
+    // Schedule
     if (
       filters.schedule !== "Any" &&
       !job.schedule.toLowerCase().includes(filters.schedule.toLowerCase())
