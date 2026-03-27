@@ -227,44 +227,31 @@ export default function ApplicationListScreen() {
       return item.jobId._id === jobId;
     });
   }, [referrals, jobId]);
+  
+const listData: ListRow[] = useMemo(() => {
+  const rows: ListRow[] = [];
 
-  const listData: ListRow[] = useMemo(() => {
-    const rows: ListRow[] = [];
+  const filteredApps = applications.filter(app =>
+    tab === "accepted"
+      ? app.status === "accepted"
+      : app.status === "pending" || !app.status
+  );
 
-    rows.push({
-      type: "section",
-      id: "applicants-section",
-      title: "Applicants",
+  rows.push({ type: "section", id: "applicants-section", title: "Applicants" });
+  filteredApps.forEach(item => {
+    rows.push({ type: "application", id: `application-${item._id}`, data: item });
+  });
+
+  // referrals only shown in pending tab
+  if (tab === "pending") {
+    rows.push({ type: "section", id: "referrals-section", title: "Referred Workers" });
+    filteredReferrals.forEach(item => {
+      rows.push({ type: "referral", id: `referral-${item._id}`, data: item });
     });
+  }
 
-    if (applications.length > 0) {
-      applications.forEach((item) => {
-        rows.push({
-          type: "application",
-          id: `application-${item._id}`,
-          data: item,
-        });
-      });
-    }
-
-    rows.push({
-      type: "section",
-      id: "referrals-section",
-      title: "Referred Workers",
-    });
-
-    if (filteredReferrals.length > 0) {
-      filteredReferrals.forEach((item) => {
-        rows.push({
-          type: "referral",
-          id: `referral-${item._id}`,
-          data: item,
-        });
-      });
-    }
-
-    return rows;
-  }, [applications, filteredReferrals]);
+  return rows;
+}, [applications, filteredReferrals, tab]); // ← add tab here
 
   const handleAccept = async (applicationId: string) => {
     try {
@@ -620,7 +607,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
 
-  headerTitle: { color: Colors.white, fontSize: 18, fontWeight: "700" },
 
   backBtn: {
     width: 36,
@@ -790,4 +776,56 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   skipBtnText: { color: Colors.textSecondary, fontWeight: "600", fontSize: 14 },
+  overlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.5)",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: 20,
+},
+modalCard: {
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 24,
+  width: "100%",
+  gap: 12,
+},
+modalTitle: {
+  fontSize: 18,
+  fontWeight: "800",
+  color: Colors.textPrimary,
+},
+modalSubtitle: {
+  fontSize: 14,
+  color: Colors.textSecondary,
+},
+reviewInput: {
+  borderWidth: 1,
+  borderColor: "#DDD",
+  borderRadius: 10,
+  padding: 10,
+  fontSize: 14,
+  color: Colors.textPrimary,
+  minHeight: 80,
+  textAlignVertical: "top",
+},
+skipBtn: {
+  flex: 1,
+  padding: 12,
+  borderRadius: 999,
+  backgroundColor: "#F1F3F5",
+  alignItems: "center",
+},
+submitRatingBtn: {
+  flex: 1,
+  padding: 12,
+  borderRadius: 999,
+  backgroundColor: Colors.primary,
+  alignItems: "center",
+},
+submitRatingText: {
+  color: "#fff",
+  fontWeight: "700",
+  fontSize: 14,
+},
 });
