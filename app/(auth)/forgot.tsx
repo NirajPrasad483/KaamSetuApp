@@ -152,7 +152,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <LinearGradient colors={["#6c4ef6", "#4a6cf7"]} style={styles.container}>
+    <LinearGradient colors={["#2196F3", "#4a6cf7"]} style={styles.container}>
       <Text style={styles.logo}>KaamSetu</Text>
       <Text style={styles.subtitle}>Reset your password securely</Text>
 
@@ -181,12 +181,12 @@ export default function ForgotPassword() {
             onPress={handleSendOTP}
             disabled={timer > 0 || sendingOtp}
           >
-            <Text style={{ fontSize: 12 }}>
+            <Text style={{fontSize: 12, color: "#fff", fontWeight: "600"}}>
               {sendingOtp
                 ? "Sending..."
                 : timer > 0
-                  ? `Wait ${timer}s`
-                  : "Verify"}
+                  ? "Send OTP"
+                  : "Send OTP"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -264,7 +264,7 @@ export default function ForgotPassword() {
 
         {/* Button */}
         <TouchableOpacity onPress={handleReset}>
-          <LinearGradient colors={["#6c4ef6", "#4a6cf7"]} style={styles.button}>
+          <LinearGradient colors={["#2196F3", "#2196F3"]} style={styles.button}>
             <Text style={styles.buttonText}>Reset Password</Text>
           </LinearGradient>
         </TouchableOpacity>
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
   verifyBtn: {
     marginLeft: 10,
     padding: 10,
-    backgroundColor: "#ddd",
+    backgroundColor : "#ff9800",
     borderRadius: 8,
   },
 
@@ -377,13 +377,13 @@ const styles = StyleSheet.create({
   timerText: {
     textAlign: "center",
     marginTop: 5,
-    color: "#555",
+    color: "#2196F3",
   },
 
   resendText: {
     textAlign: "center",
     marginTop: 5,
-    color: "#4a6cf7",
+    color: "#2196F3",
   },
 
   label: {
