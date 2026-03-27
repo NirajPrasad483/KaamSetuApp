@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
+import { Base_Url,API_BASE } from "../../constants/Config";
 import {
   ActivityIndicator,
   Alert,
@@ -17,10 +18,12 @@ import {
   View,
 } from "react-native";
 
+import Popup from "../../components/Popup";
+
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────────────────────────────────────
-const BASE_URL = "http://172.27.16.252:8030/api";
+const BASE_URL = API_BASE; // ← same IP as login.tsx
 
 const PURPLE = "#2196F3";
 const LIGHT_PURPLE = "#F3E5F5";
@@ -136,6 +139,9 @@ export default function LiveJobsScreen() {
   const [expectedPay, setExpectedPay] = useState("");
   const [preferredTime, setPreferredTime] = useState("");
   const [remarks, setRemarks] = useState("");
+
+  const [popup, setPopup] = useState("");
+  const [popupType, setPopupType] = useState<"normal" | "error">("normal");
 
   // ── Filter state ────────────────────────────────────────────────────────────
   const [filters, setFilters] = useState({
@@ -256,6 +262,11 @@ export default function LiveJobsScreen() {
   // FILTER LOGIC
   // ─────────────────────────────────────────────────────────────────────────
   const filteredJobs = jobs.filter((job) => {
+    // ── Hide completed / cancelled jobs ──────────────────────────────────────
+    const s = (job.status || "").trim().toLowerCase();
+    if (s === "completed" || s === "cancelled") return false;
+
+    // Category
     if (filters.category !== "All" && job.category !== filters.category)
       return false;
 
@@ -268,6 +279,7 @@ export default function LiveJobsScreen() {
       if (filters.pay === "₹1000+" && max < 1000) return false;
     }
 
+    // Schedule
     if (
       filters.schedule !== "Any" &&
       !job.schedule.toLowerCase().includes(filters.schedule.toLowerCase())
@@ -294,6 +306,8 @@ export default function LiveJobsScreen() {
         "appliedApplications",
         JSON.stringify(updatedApplications),
       );
+      setPopup("Application removed");
+      setPopupType("normal");
 
       Alert.alert("Cancelled", "Application removed");
       return;
@@ -324,9 +338,11 @@ export default function LiveJobsScreen() {
                 JSON.stringify(updated),
               );
 
-              Alert.alert("✅ Applied!", "Application submitted");
+              setPopup("Application submitted");
+              setPopupType("normal");
             } else {
-              Alert.alert("Error", data.message);
+              setPopup(data.message || "Something went wrong");
+              setPopupType("error");
             }
           } catch {
             const updated = [...appliedJobs, jobId];
@@ -334,7 +350,8 @@ export default function LiveJobsScreen() {
 
             await AsyncStorage.setItem("appliedJobs", JSON.stringify(updated));
 
-            Alert.alert("✅ Applied!", "Saved locally");
+            setPopup("Saved locally");
+            setPopupType("normal");
           }
         },
       },
@@ -399,14 +416,23 @@ export default function LiveJobsScreen() {
   };
 
   const handleReferSubmit = async () => {
-    if (!referName.trim())
-      return Alert.alert("Error", "Please enter the worker's name");
+    if (!referName.trim()) {
+    setPopup("Please enter the worker's name");
+    setPopupType("error");
+    return;
+  }
 
-    if (referPhone.length !== 10)
-      return Alert.alert("Error", "Phone number must be exactly 10 digits");
+  if (referPhone.length !== 10) {
+    setPopup("Phone number must be exactly 10 digits");
+    setPopupType("error");
+    return;
+  }
 
-    if (!referSkills.trim())
-      return Alert.alert("Error", "Please describe the worker's skills");
+  if (!referSkills.trim()) {
+    setPopup("Please describe the worker's skills");
+    setPopupType("error");
+    return;
+  }
 
     setReferLoading(true);
 
@@ -428,14 +454,19 @@ export default function LiveJobsScreen() {
       const data = await res.json();
 
       if (!res.ok) {
-        return Alert.alert("Error", data.message || "Failed to add referral");
+        setPopup(data.message || "Failed to add referral");
+        setPopupType("error");
+        return;
       }
 
-      Alert.alert("✅ Referral Added!", "Worker added to your referrals.");
+      setPopup("Worker added to your referrals");
+      setPopupType("normal");
+
       closeReferModal();
     } catch (error) {
       console.log("Referral error:", error);
-      Alert.alert("Error", "Something went wrong");
+      setPopup("Something went wrong");
+      setPopupType("error");
     } finally {
       setReferLoading(false);
     }
@@ -570,7 +601,16 @@ export default function LiveJobsScreen() {
           </Text>
 
           <View style={styles.buttonRow}>
-            {true && (
+            {/* Apply Now — workers only */}
+            {isWorker && (
+              // <TouchableOpacity
+              //   style={styles.btnApply}
+              //   onPress={() => handleApply(job._id)}
+              //   activeOpacity={0.85}
+              // >
+              //   <Text style={styles.btnText}>Apply Now</Text>
+              // </TouchableOpacity>
+
               <TouchableOpacity
                 style={[
                   styles.btnApply,
@@ -596,6 +636,8 @@ export default function LiveJobsScreen() {
                     );
 
                     Alert.alert("Cancelled", "Application removed");
+                    setPopup("Application removed");
+                    setPopupType("normal");
                     return;
                   }
 
@@ -839,12 +881,14 @@ export default function LiveJobsScreen() {
                   if (!applyJobId) return;
 
                   if (!expectedPay.trim()) {
-                    Alert.alert("Error", "Expected pay is required");
+                    setPopup("Expected pay is required");
+                    setPopupType("error");
                     return;
                   }
 
                   if (!preferredTime.trim()) {
-                    Alert.alert("Error", "Preferred time is required");
+                    setPopup("Preferred time is required");
+                    setPopupType("error");
                     return;
                   }
 
@@ -870,7 +914,8 @@ export default function LiveJobsScreen() {
 
                     setApplyModal(false);
 
-                    Alert.alert("Cancelled", "Application removed");
+                    setPopup("Application removed");
+                    setPopupType("normal");
 
                     return;
                   }
@@ -927,16 +972,16 @@ export default function LiveJobsScreen() {
                       setPreferredTime("");
                       setRemarks("");
 
-                      Alert.alert(
-                        "✅ Applied",
-                        "Application submitted successfully",
-                      );
+                      setPopup("Application submitted successfully");
+                      setPopupType("normal");
                     } else {
-                      Alert.alert("Error", data.message || "Failed to apply");
+                      setPopup(data.message || "Failed to apply");
+                      setPopupType("error");
                     }
                   } catch (err) {
                     console.log(err);
-                    Alert.alert("Error", "Something went wrong");
+                    setPopup("Something went wrong");
+                    setPopupType("error");
                   }
                 }}
               >
@@ -948,6 +993,15 @@ export default function LiveJobsScreen() {
           </View>
         </View>
       </Modal>
+
+      <Popup
+        message={popup}
+        type={popupType}
+        onClose={() => {
+          setPopup("");
+          setPopupType("normal");
+        }}
+      />
     </SafeAreaView>
   );
 }

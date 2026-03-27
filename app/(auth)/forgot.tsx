@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
+import { Base_Url , API_BASE} from "../../constants/Config";
 import {
   StyleSheet,
   Text,
@@ -9,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Popup from "../../components/Popup";
 
 export default function ForgotPassword() {
   const [sendingOtp, setSendingOtp] = useState(false);
@@ -26,6 +28,7 @@ export default function ForgotPassword() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const [error, setError] = useState("");
+  const [popup, setPopup] = useState("");
 
   useEffect(() => {
     inputs.current[0]?.focus();
@@ -51,7 +54,7 @@ export default function ForgotPassword() {
       }
       setSendingOtp(true); // 🔥 START
 
-      const res = await fetch("http://172.27.16.252:8030/api/auth/send-otp", {
+      const res = await fetch(`${API_BASE}/auth/send-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -67,7 +70,7 @@ export default function ForgotPassword() {
       }
 
       setError("");
-      alert("OTP sent 📩");
+      setPopup("OTP sent 📩");
 
       setTimer(30);
     } catch (err) {
@@ -119,7 +122,7 @@ export default function ForgotPassword() {
       }
       console.log("API CALL START");
       const res = await fetch(
-        "http://172.27.16.252:8030/api/auth/reset-password",
+        `${API_BASE}/auth/reset-password`,
         {
           method: "POST",
           headers: {
@@ -141,7 +144,7 @@ export default function ForgotPassword() {
       }
 
       setError("");
-      alert("Password reset successful ✅");
+      setPopup("Password reset successful ✅");
 
       router.replace("/(auth)/login");
     } catch (err) {
@@ -151,7 +154,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <LinearGradient colors={["#6c4ef6", "#4a6cf7"]} style={styles.container}>
+    <LinearGradient colors={["#2196F3", "#4a6cf7"]} style={styles.container}>
       <Text style={styles.logo}>KaamSetu</Text>
       <Text style={styles.subtitle}>Reset your password securely</Text>
 
@@ -180,12 +183,12 @@ export default function ForgotPassword() {
             onPress={handleSendOTP}
             disabled={timer > 0 || sendingOtp}
           >
-            <Text style={{ fontSize: 12 }}>
+            <Text style={{fontSize: 12, color: "#fff", fontWeight: "600"}}>
               {sendingOtp
                 ? "Sending..."
                 : timer > 0
-                  ? `Wait ${timer}s`
-                  : "Verify"}
+                  ? "Send OTP"
+                  : "Send OTP"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -263,7 +266,7 @@ export default function ForgotPassword() {
 
         {/* Button */}
         <TouchableOpacity onPress={handleReset}>
-          <LinearGradient colors={["#6c4ef6", "#4a6cf7"]} style={styles.button}>
+          <LinearGradient colors={["#2196F3", "#2196F3"]} style={styles.button}>
             <Text style={styles.buttonText}>Reset Password</Text>
           </LinearGradient>
         </TouchableOpacity>
@@ -275,6 +278,10 @@ export default function ForgotPassword() {
           Back to Login
         </Text>
       </View>
+      <Popup
+        message={popup}
+        onClose={() => setPopup("")}
+      />
     </LinearGradient>
   );
 }
@@ -329,7 +336,7 @@ const styles = StyleSheet.create({
   verifyBtn: {
     marginLeft: 10,
     padding: 10,
-    backgroundColor: "#ddd",
+    backgroundColor : "#ff9800",
     borderRadius: 8,
   },
 
@@ -376,13 +383,13 @@ const styles = StyleSheet.create({
   timerText: {
     textAlign: "center",
     marginTop: 5,
-    color: "#555",
+    color: "#2196F3",
   },
 
   resendText: {
     textAlign: "center",
     marginTop: 5,
-    color: "#4a6cf7",
+    color: "#2196F3",
   },
 
   label: {

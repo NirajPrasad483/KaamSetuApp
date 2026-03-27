@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
+import { Base_Url , API_BASE} from "../../constants/Config";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -12,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Popup from "../../components/Popup";
 
 export default function Register() {
   const [sendingOtp, setSendingOtp] = useState(false);
@@ -26,6 +28,7 @@ export default function Register() {
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [timer, setTimer] = useState(0);
+  const [popup, setPopup] = useState("");
 
   // 🔥 TAG SYSTEM
   const [tagInput, setTagInput] = useState("");
@@ -93,7 +96,7 @@ export default function Register() {
         return;
       }
       setSendingOtp(true); // 🔥 START LOADING
-      const res = await fetch("http://172.27.16.252:8030/api/auth/send-otp", {
+      const res = await fetch(`${API_BASE}/auth/send-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -108,7 +111,7 @@ export default function Register() {
         return;
       }
 
-      alert("OTP sent to email 📩");
+      setPopup("OTP sent to email 📩");
 
       setTimer(30);
     } catch (err) {
@@ -143,7 +146,7 @@ export default function Register() {
         return;
       }
 
-      const res = await fetch("http://172.27.16.252:8030/api/auth/register", {
+      const res = await fetch(`${API_BASE}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -167,7 +170,7 @@ export default function Register() {
         return;
       }
 
-      alert("Registered Successfully ✅");
+      setPopup("Registered Successfully ✅");
 
       router.replace("/(auth)/login");
     } catch (err) {
@@ -177,7 +180,7 @@ export default function Register() {
   };
 
   return (
-    <LinearGradient colors={["#6c4ef6", "#4a6cf7"]} style={{ flex: 1 }}>
+    <LinearGradient colors={["#2196F3", "#4a6cf7"]} style={{ flex: 1 }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
@@ -218,7 +221,7 @@ export default function Register() {
                 <Ionicons
                   name={isWorker ? "checkbox" : "square-outline"}
                   size={22}
-                  color="#4a6cf7"
+                  color="#2196F3"
                 />
               </TouchableOpacity>
               <Text>Register as a Worker</Text>
@@ -243,19 +246,19 @@ export default function Register() {
                 onPress={handleSendOTP}
                 disabled={timer > 0 || sendingOtp}
               >
-                <Text style={{ fontSize: 12 }}>
+                <Text style={{ fontSize: 12, color: "#fff", fontWeight: "600" }}>
                   {sendingOtp
                     ? "Sending..."
                     : timer > 0
-                      ? `Wait ${timer}s`
-                      : "Verify OTP"}
+                    ? "Send OTP"
+                    : "Send OTP"}
                 </Text>
               </TouchableOpacity>
             </View>
 
             {/* Resend OTP */}
             {timer > 0 ? (
-              <Text style={{ textAlign: "center", marginTop: 5 }}>
+              <Text style={{ textAlign: "center", marginTop: 5, color: "#2196F3" }}>
                 Resend OTP in {timer}s
               </Text>
             ) : (
@@ -263,7 +266,7 @@ export default function Register() {
                 <Text
                   style={{
                     textAlign: "center",
-                    color: "#4a6cf7",
+                    color: "#2196F3",
                     marginTop: 5,
                   }}
                 >
@@ -331,7 +334,7 @@ export default function Register() {
                       style={[
                         styles.tag,
                         selectedTags.includes(item) && {
-                          backgroundColor: "#4a6cf7",
+                          backgroundColor: "#2196F3",
                         },
                       ]}
                       onPress={() => addTag(item)}
@@ -355,15 +358,24 @@ export default function Register() {
                   ))}
                 </View>
 
+
                 <View style={styles.inputContainer}>
-                  <Ionicons name="pricetag-outline" size={20} />
+                  <Ionicons name="pricetag-outline" size={20} color="#777" />
+
                   <TextInput
                     placeholder="Add your own skill"
-                    style={styles.input}
+                    placeholderTextColor="#888"
+                    style={[styles.input, { flex: 1 }]}
                     value={tagInput}
                     onChangeText={setTagInput}
-                    onSubmitEditing={() => addTag(tagInput)}
                   />
+
+                  <TouchableOpacity
+                    onPress={() => addTag(tagInput)}
+                    style={{ paddingHorizontal: 6 }}
+                  >
+                    <Ionicons name="add" size={24} color="#777" />
+                  </TouchableOpacity>
                 </View>
               </>
             )}
@@ -374,6 +386,7 @@ export default function Register() {
               placeholder="Phone Number"
               value={phone}
               onChange={setPhone}
+              numeric
             />
 
             {/* Error */}
@@ -382,7 +395,7 @@ export default function Register() {
             {/* Register */}
             <TouchableOpacity onPress={handleRegister}>
               <LinearGradient
-                colors={["#6c4ef6", "#4a6cf7"]}
+                colors={["#2196F3", "#2196F3"]}
                 style={styles.button}
               >
                 <Text style={styles.buttonText}>Register</Text>
@@ -394,6 +407,10 @@ export default function Register() {
             </Text>
           </View>
         </ScrollView>
+        <Popup
+          message={popup}
+          onClose={() => setPopup("")}
+        />
       </KeyboardAvoidingView>
     </LinearGradient>
   );
@@ -401,14 +418,23 @@ export default function Register() {
 
 /* 🔥 Reusable */
 
-const Input = ({ icon, placeholder, value, onChange }: any) => (
+const Input = ({ icon, placeholder, value, onChange, numeric }: any) => (
   <View style={styles.inputContainer}>
     <Ionicons name={icon} size={20} />
     <TextInput
       placeholder={placeholder}
       style={styles.input}
       value={value}
-      onChangeText={onChange}
+      keyboardType={numeric ? "numeric" : "default"}
+      maxLength={numeric ? 10 : undefined}
+      onChangeText={(text) => {
+        if (numeric) {
+          const filtered = text.replace(/[^0-9]/g, "");
+          onChange(filtered);
+        } else {
+          onChange(text);
+        }
+      }}
     />
   </View>
 );
@@ -488,7 +514,7 @@ const styles = StyleSheet.create({
   otpBtn: {
     marginLeft: 10,
     padding: 10,
-    backgroundColor: "#ddd",
+    backgroundColor: "#ff9800",
     borderRadius: 8,
   },
 
@@ -529,7 +555,7 @@ const styles = StyleSheet.create({
 
   tag: {
     flexDirection: "row",
-    backgroundColor: "#6c4ef6",
+    backgroundColor: "#2196F3",
     padding: 6,
     borderRadius: 10,
     marginRight: 5,
@@ -578,6 +604,45 @@ const styles = StyleSheet.create({
   },
 
   activeRole: {
-    backgroundColor: "#4a6cf7",
+    backgroundColor: "#2196F3",
   },
+
+  // popup: {
+  //   position: "absolute",
+  //   top: "40%",
+  //   left: 20,
+  //   right: 20,
+  //   backgroundColor: "#2196F3",
+  //   padding: 20,
+  //   borderRadius: 15,
+  //   alignItems: "center",
+  //   elevation: 5,
+  // },
+
+  // popup: {
+  //   position: "absolute",
+  //   top: 0,
+  //   left: 0,
+  //   right: 0,
+  //   bottom: 0,
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  //   backgroundColor: "rgba(0,0,0,0.3)", // dark overlay
+  // },
+
+  // popupBox: {
+  //   backgroundColor: "#2196F3",
+  //   padding: 20,
+  //   borderRadius: 15,
+  //   width: "80%",
+  //   alignItems: "center",
+  //   elevation: 5,
+  // },
+
+  // popupText: {
+  //   fontSize: 16,
+  //   fontWeight: "600",
+  //   color: "#fff",
+  //   textAlign: "center",
+  // },
 });

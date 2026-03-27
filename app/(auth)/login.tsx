@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useState } from "react";
+import { Base_Url , API_BASE} from "../../constants/Config";
 import {
   StyleSheet,
   Text,
@@ -49,7 +50,7 @@ export default function HomeScreen() {
     try {
       setError("");
 
-      const res = await fetch("http://172.27.16.252:8030/api/auth/login", {
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -84,7 +85,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <LinearGradient colors={["#6c4ef6", "#4a6cf7"]} style={styles.container}>
+    <LinearGradient colors={["#2196F3", "#4a6cf7"]} style={styles.container}>
       <Text style={styles.logo}>KaamSetu</Text>
       <Text style={styles.subtitle}>Bridging Opportunities</Text>
 
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    backgroundColor: "#6c4ef6",
+    backgroundColor: "#2196F3",
     padding: 14,
     borderRadius: 10,
     marginTop: 15,

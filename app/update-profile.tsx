@@ -3,7 +3,8 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Base_Url , API_BASE} from "../constants/Config";
 import {
   Alert,
   Image,
@@ -20,7 +21,7 @@ import {
 } from "react-native";
 import { KColors as Colors, Radius } from "../constants/kaamsetuTheme";
 
-const BASE_URL = "http://172.27.16.252:8030";
+const BASE_URL = Base_Url;
 
 const SUGGESTIONS = [
   "Electrician",
@@ -120,9 +121,15 @@ export default function UpdateProfileScreen() {
         if (parsed.skills) {
           if (Array.isArray(parsed.skills)) {
             setSelectedTags(parsed.skills);
-          } else if (typeof parsed.skills === "string" && parsed.skills.trim()) {
+          } else if (
+            typeof parsed.skills === "string" &&
+            parsed.skills.trim()
+          ) {
             setSelectedTags(
-              parsed.skills.split(",").map((s: string) => s.trim()).filter(Boolean)
+              parsed.skills
+                .split(",")
+                .map((s: string) => s.trim())
+                .filter(Boolean),
             );
           }
         }
@@ -269,7 +276,9 @@ export default function UpdateProfileScreen() {
                       selectedTags.includes(item) && styles.chipSelected,
                     ]}
                     onPress={() =>
-                      selectedTags.includes(item) ? removeTag(item) : addTag(item)
+                      selectedTags.includes(item)
+                        ? removeTag(item)
+                        : addTag(item)
                     }
                   >
                     <Text

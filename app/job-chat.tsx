@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
+import { Base_Url, API_BASE } from "../constants/Config";
 import {
   ActivityIndicator,
   Alert,
@@ -111,9 +112,12 @@ export default function JobChatScreen() {
         return;
       }
 
-      const res = await fetch(`${API_URL}/api/chat/${chatId}/messages`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const res = await fetch(
+        `${API_BASE}/chat/${chatId}/messages`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
       });
 
@@ -182,11 +186,17 @@ export default function JobChatScreen() {
         return;
       }
 
-      const res = await fetch(`${API_URL}/api/chat/${chatId}/send`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const res = await fetch(
+        `${API_BASE}/chat/${chatId}/send`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            content: input.trim(),
+          }),
         },
         body: JSON.stringify({
           content: trimmed,
