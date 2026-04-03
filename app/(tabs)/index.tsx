@@ -100,6 +100,7 @@ type Job = {
   budgetMax: number;
   isNegotiable: boolean;
   schedule: string;
+  endDate?: string | null;
   address: string;
   rating: number;
   description: string;
@@ -222,6 +223,7 @@ export default function LiveJobsScreen() {
 
       if (res.ok) {
         if (Array.isArray(data)) {
+          // FIXED
           const formatted = data.map((job) => ({
             ...job,
             budgetMin: job.minBudget,
@@ -233,8 +235,19 @@ export default function LiveJobsScreen() {
               hour: "numeric",
               minute: "2-digit",
             }),
-            postedBy: { name: "User" },
-            rating: 4,
+            endDate: job.endDate
+              ? new Date(job.endDate).toLocaleString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  hour: "numeric",
+                  minute: "2-digit",
+                })
+              : null,
+            postedBy: {
+              name: job.posterId?.name || "Unknown",
+              _id: job.posterId?._id,
+            },
+            rating: job.posterId?.rating ?? 0,
           }));
 
           setJobs(formatted);
@@ -415,86 +428,86 @@ export default function LiveJobsScreen() {
     setReferSkills("");
   };
 
-const handleReferSubmit = async () => {
-  console.log("🚀 Referral submit triggered");
+  const handleReferSubmit = async () => {
+    console.log("🚀 Referral submit triggered");
 
-  if (!referName.trim()) {
-    console.log("❌ Name missing");
-    setPopup("Please enter the worker's name");
-    setPopupType("error");
-    return;
-  }
-
-  if (!/^\d{10}$/.test(referPhone.trim())) {
-    console.log("❌ Invalid phone:", referPhone);
-    setPopup("Phone number must be exactly 10 digits");
-    setPopupType("error");
-    return;
-  }
-
-  if (!referSkills.trim()) {
-    console.log("❌ Skills missing");
-    setPopup("Please describe the worker's skills");
-    setPopupType("error");
-    return;
-  }
-
-  if (!referJobId) {
-    console.log("❌ No jobId");
-    setPopup("No job selected");
-    setPopupType("error");
-    return;
-  }
-
-  setReferLoading(true);
-
-  const payload = {
-    workerName: referName.trim(),
-    workerPhone: referPhone.trim(),
-    message: referSkills.trim(),
-    jobId: referJobId,
-  };
-
-  console.log("📦 Sending payload:", payload);
-  console.log("🌐 URL:", `${BASE_URL}/referrals/add`);
-
-  try {
-    const res = await fetch(`${BASE_URL}/referrals/add`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    console.log("📡 Response status:", res.status);
-
-    const data = await res.json();
-    console.log("📨 Response data:", data);
-
-    if (!res.ok) {
-      console.log("❌ Backend error:", data);
-      setPopup(data.message || "Failed to add referral");
+    if (!referName.trim()) {
+      console.log("❌ Name missing");
+      setPopup("Please enter the worker's name");
       setPopupType("error");
       return;
     }
 
-    console.log("✅ Referral success");
+    if (!/^\d{10}$/.test(referPhone.trim())) {
+      console.log("❌ Invalid phone:", referPhone);
+      setPopup("Phone number must be exactly 10 digits");
+      setPopupType("error");
+      return;
+    }
 
-    setPopup("Worker added to your referrals");
-    setPopupType("normal");
+    if (!referSkills.trim()) {
+      console.log("❌ Skills missing");
+      setPopup("Please describe the worker's skills");
+      setPopupType("error");
+      return;
+    }
 
-    closeReferModal();
-  } catch (error) {
-    console.log("🔥 Network / Fetch error:", error);
-    setPopup("Something went wrong");
-    setPopupType("error");
-  } finally {
-    console.log("🧹 Done (loading false)");
-    setReferLoading(false);
-  }
-};
+    if (!referJobId) {
+      console.log("❌ No jobId");
+      setPopup("No job selected");
+      setPopupType("error");
+      return;
+    }
+
+    setReferLoading(true);
+
+    const payload = {
+      workerName: referName.trim(),
+      workerPhone: referPhone.trim(),
+      message: referSkills.trim(),
+      jobId: referJobId,
+    };
+
+    console.log("📦 Sending payload:", payload);
+    console.log("🌐 URL:", `${BASE_URL}/referrals/add`);
+
+    try {
+      const res = await fetch(`${BASE_URL}/referrals/add`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      console.log("📡 Response status:", res.status);
+
+      const data = await res.json();
+      console.log("📨 Response data:", data);
+
+      if (!res.ok) {
+        console.log("❌ Backend error:", data);
+        setPopup(data.message || "Failed to add referral");
+        setPopupType("error");
+        return;
+      }
+
+      console.log("✅ Referral success");
+
+      setPopup("Worker added to your referrals");
+      setPopupType("normal");
+
+      closeReferModal();
+    } catch (error) {
+      console.log("🔥 Network / Fetch error:", error);
+      setPopup("Something went wrong");
+      setPopupType("error");
+    } finally {
+      console.log("🧹 Done (loading false)");
+      setReferLoading(false);
+    }
+  };
   // ─────────────────────────────────────────────────────────────────────────
   // RENDER: Filter Pill + Dropdown
   // ─────────────────────────────────────────────────────────────────────────
@@ -614,8 +627,15 @@ const handleReferSubmit = async () => {
             <Text style={styles.infoLabel}>Budget: </Text>
             {budgetText}
             {"     "}
-            <Text style={styles.infoLabel}>Time Schedule: </Text>
+            <Text style={styles.infoLabel}>Start: </Text>
             {job.schedule}
+            {job.endDate ? (
+              <>
+                {"     "}
+                <Text style={styles.infoLabel}>End: </Text>
+                {job.endDate}
+              </>
+            ) : null}
           </Text>
 
           <Text style={styles.infoText}>

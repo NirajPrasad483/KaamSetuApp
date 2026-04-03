@@ -2,7 +2,11 @@ import mongoose from "mongoose";
 
 const jobSchema = new mongoose.Schema(
   {
-    posterId: { type: String, required: true },
+    posterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    }, // ← changed from String to ObjectId ref
     category: { type: String, required: true },
     description: { type: String, required: true },
     address: { type: String, required: true },
@@ -21,6 +25,5 @@ const jobSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// ✅ THIS IS THE CRITICAL LINE
 const Job = mongoose.model("Job", jobSchema);
 export default Job;

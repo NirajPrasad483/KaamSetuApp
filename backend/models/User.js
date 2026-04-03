@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema(
+  {
     name: String,
     email: { type: String, unique: true },
     phone: { type: String, unique: true },
@@ -10,23 +11,27 @@ const userSchema = new mongoose.Schema({
     profileImage: { type: String, default: "profile.jpg" },
 
     role: {
-        type: String,
-        enum: ["user", "worker"],
-        default: "user",
+      type: String,
+      enum: ["user", "worker"],
+      default: "user",
     },
-    ratings: [{
+    ratings: [
+      {
         rating: { type: Number, min: 1, max: 5 },
         review: { type: String },
         givenBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
         createdAt: { type: Date, default: Date.now },
-    }],
+      },
+    ],
     averageRating: { type: Number, default: 0 },
     totalRatings: { type: Number, default: 0 },
-}, { timestamps: true });
+  },
+  { timestamps: true },
+);
 
 // ================= REFERRALS =================
 userSchema.add({
-    referrals: [{ type: mongoose.Schema.Types.ObjectId, ref: "Referral" }],
+  referrals: [{ type: mongoose.Schema.Types.ObjectId, ref: "Referral" }],
 });
 
 export default mongoose.model("User", userSchema);

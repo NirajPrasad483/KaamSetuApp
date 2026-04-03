@@ -20,7 +20,7 @@ import {
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────────────────────────────────────
-const BASE_URL = "http://172.27.16.252:8030/api"; // Your server IP
+const BASE_URL = "http://172.23.34.85:8030/api"; // Your server IP
 const PRIMARY = "#2196F3";
 const BG_COLOR = "#f5f3ff";
 const CARD_BG = "#ffffff";
