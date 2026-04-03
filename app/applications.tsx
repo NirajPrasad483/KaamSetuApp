@@ -2,26 +2,26 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Modal,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Modal,
+    SafeAreaView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import {
-  KColors as Colors,
-  Radius,
-  Shadow,
-  Spacing,
+    KColors as Colors,
+    Radius,
+    Shadow,
+    Spacing,
 } from "../constants/kaamsetuTheme";
 
-const API_URL = "http://172.27.16.252:8030";
+const API_URL = "http://172.23.34.85:8030";
 
 function StarRatingInput({
   rating,

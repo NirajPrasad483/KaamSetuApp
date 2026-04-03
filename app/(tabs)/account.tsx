@@ -237,28 +237,40 @@ export default function AccountScreen() {
 
       if (parsedUser.role === "worker") {
         // ── WORKER: fetch current apps + past apps + referrals + job requests ──
-                  const [appsRes, referralsRes, requestsRes, pastRequestsRes] = await Promise.all([
+        const [appsRes, referralsRes, requestsRes, pastRequestsRes] =
+          await Promise.all([
             fetch(`${API_URL}/api/applications/my-applications`, { headers }),
             fetch(`${API_URL}/api/referrals`, { headers }),
-            fetch(`${API_URL}/api/jobs/my-requests/${parsedUser._id}`, { headers }),
-            fetch(`${API_URL}/api/jobs/my-past-requests/${parsedUser._id}`, { headers }),
+            fetch(`${API_URL}/api/jobs/my-requests/${parsedUser._id}`, {
+              headers,
+            }),
+            fetch(`${API_URL}/api/jobs/my-past-requests/${parsedUser._id}`, {
+              headers,
+            }),
           ]);
 
-          const [appsData, referralsData, requestsData, pastRequestsData] = await Promise.all([
+        const [appsData, referralsData, requestsData, pastRequestsData] =
+          await Promise.all([
             appsRes.json(),
             referralsRes.json(),
             requestsRes.json(),
             pastRequestsRes.json(),
           ]);
 
-          const allApps = appsRes.ok ? (appsData.applications ?? []) : [];
-          setMyApplications(allApps.filter((a: ApplicationType) => 
-            a.status === "pending" || a.status === "accepted"
-          ));
-          setMyPastApplications(allApps.filter((a: ApplicationType) => 
-            a.status === "rejected" || a.status === "completed"
-          ));
-                  setMyReferrals(
+        const allApps = appsRes.ok ? (appsData.applications ?? []) : [];
+        setMyApplications(
+          allApps.filter(
+            (a: ApplicationType) =>
+              a.status === "pending" || a.status === "accepted",
+          ),
+        );
+        setMyPastApplications(
+          allApps.filter(
+            (a: ApplicationType) =>
+              a.status === "rejected" || a.status === "completed",
+          ),
+        );
+        setMyReferrals(
           referralsRes.ok && Array.isArray(referralsData.referrals)
             ? referralsData.referrals
             : [],

@@ -1,29 +1,29 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Base_Url, API_BASE } from "../constants/Config";
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
+import { API_BASE } from "../constants/Config";
 import {
-  KColors as Colors,
-  Radius,
-  Shadow,
-  Spacing,
+    KColors as Colors,
+    Radius,
+    Shadow,
+    Spacing,
 } from "../constants/kaamsetuTheme";
 
-const API_URL = "http://172.27.16.252:8030";
+const API_URL = "http://172.23.34.85:8030";
 
 type RawSender =
   | string
@@ -112,14 +112,11 @@ export default function JobChatScreen() {
         return;
       }
 
-      const res = await fetch(
-        `${API_BASE}/chat/${chatId}/messages`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const res = await fetch(`${API_BASE}/chat/${chatId}/messages`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       const data = await res.json();
 
@@ -136,7 +133,9 @@ export default function JobChatScreen() {
         : [];
 
       const normalizedMessages = rawMessages
-        .map((msg: RawChatMessage, index: number) => normalizeMessage(msg, index))
+        .map((msg: RawChatMessage, index: number) =>
+          normalizeMessage(msg, index),
+        )
         .sort(
           (a: ChatMessage, b: ChatMessage) =>
             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
@@ -186,14 +185,12 @@ export default function JobChatScreen() {
         return;
       }
 
-      const res = await fetch(
-        `${API_BASE}/chat/${chatId}/send`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+      const res = await fetch(`${API_BASE}/chat/${chatId}/send`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
 
         body: JSON.stringify({
           content: trimmed,
