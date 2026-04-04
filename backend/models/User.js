@@ -32,6 +32,7 @@ averageEmployerRating: { type: Number, default: 0 },
 totalEmployerRatings: { type: Number, default: 0 },
     averageRating: { type: Number, default: 0 },
     totalRatings: { type: Number, default: 0 },
+    pushToken: { type: String, default: null }, // ✅ ADD THIS LINE
 }, { timestamps: true });
 
 // ================= REFERRALS =================

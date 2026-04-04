@@ -4,6 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Base_Url , API_BASE} from "../../constants/Config";
+import { registerForPushNotifications } from "../../backend/utils/notifications";
 import {
     StyleSheet,
     Text,
@@ -75,6 +76,8 @@ export default function HomeScreen() {
 
       // ✅ STEP 2B: user save
       await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
+      await registerForPushNotifications();
 
       // ✅ STEP 2C: redirect
       router.replace("/(tabs)");

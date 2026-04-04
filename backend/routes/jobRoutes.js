@@ -1,34 +1,77 @@
+// import express from "express";
+// import auth from "../middleware/auth.js";
+// import Job from "../models/Job.js";
+// import Application from "../models/Application.js";
+// import User from "../models/User.js";
+// const router = express.Router();
+
+// import User from "../models/User.js";
+// import sendNotification from "../utils/sendNotification.js";
+// // ─── GET ALL JOBS ─────────────────────────────────────────────────────────────
+// // AFTER:
+// // AFTER:
+
+
+
+// // ✅ 🔥 ADD THIS HERE (POST ROUTE)
+// router.post("/", auth, async (req, res) => {
+//   try {
+//     console.log("🔥 BODY:", req.body);
+//     console.log("🔥 USER:", req.user);
+
+//     const newJob = new Job({
+//       ...req.body,
+//       posterId: req.user._id,   // ✅ FIXED
+//       status: "pending",
+//     });
+
+//     const savedJob = await newJob.save();
+
+//     res.status(201).json(savedJob);
+//   } catch (err) {
+//     console.error("🔥 FULL ERROR:", err);   // ✅ VERY IMPORTANT
+//     res.status(500).json({ error: err.message }); // send real error
+//   }
+// });
+
+
 import express from "express";
 import auth from "../middleware/auth.js";
 import Job from "../models/Job.js";
 import Application from "../models/Application.js";
-import User from "../models/User.js";
+import User from "../models/User.js";                              // ✅ only once
+import sendNotification from "../utils/sendNotification.js";      // ✅ added here
+
 const router = express.Router();
 
-// ─── GET ALL JOBS ─────────────────────────────────────────────────────────────
-// AFTER:
-// AFTER:
-
-
-
-// ✅ 🔥 ADD THIS HERE (POST ROUTE)
-router.post("/", auth, async (req, res) => {
+// ─── CREATE A JOB ─────────────────────────────────────────────────────────────
+router.post("/create", async (req, res) => {                      // ✅ changed "/" to "/create"
   try {
-    console.log("🔥 BODY:", req.body);
-    console.log("🔥 USER:", req.user);
-
-    const newJob = new Job({
-      ...req.body,
-      posterId: req.user._id,   // ✅ FIXED
-      status: "pending",
-    });
-
+    const newJob = new Job(req.body);
     const savedJob = await newJob.save();
+
+    // ✅ notify matching workers
+    const matchingWorkers = await User.find({
+      role: "worker",
+      skills: { $in: [savedJob.category] },
+      pushToken: { $nin: [null, ""] },
+      _id: { $ne: savedJob.posterId },
+    }).select("pushToken");
+
+    await Promise.all(
+      matchingWorkers.map((worker) =>
+        sendNotification(
+          worker.pushToken,
+          "New Job Posted 🔔",
+          `A new ${savedJob.category} job is available near you!`,
+          { jobId: savedJob._id.toString() },
+        )
+      )
+    );
 
     res.status(201).json(savedJob);
   } catch (err) {
-    console.error("🔥 FULL ERROR:", err);   // ✅ VERY IMPORTANT
-    res.status(500).json({ error: err.message }); // send real error
+    res.status(500).json({ message: err.message });
   }
 });
 

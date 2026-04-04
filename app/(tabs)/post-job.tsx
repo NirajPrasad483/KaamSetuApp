@@ -54,7 +54,7 @@ export default function PostJob() {
   const categories = [
     "Cleaning",
     "Cooking",
-    "Plumbing",
+    "Plumber",
     "Electrician",
     "Babysitting",
     "Laundry",
@@ -146,7 +146,7 @@ export default function PostJob() {
 console.log("TOKEN:", token);
 console.log("URL:", `${API_BASE}/jobs`);
 
-const response = await fetch(`${API_BASE}/jobs`, {
+const response = await fetch(`${API_BASE}/jobs/create`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
