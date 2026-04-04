@@ -4,6 +4,7 @@ import fs from "fs";
 import jwt from "jsonwebtoken";
 import multer from "multer";
 import path from "path";
+import auth from "../middleware/auth.js";
 import User from "../models/User.js";
 
 // ─── Disk Storage Setup ──────────────────────────────────────────────────────
@@ -331,5 +332,40 @@ router.get("/me", async (req, res) => {
     res.status(401).json({ message: "Invalid token" });
   }
 });
+
+
+
+router.get("/me", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json({ user });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// SAVE PUSH TOKEN
+router.post("/save-token", auth, async (req, res) => {
+  try {
+    const { pushToken } = req.body;
+    if (!pushToken) return res.status(400).json({ message: "pushToken is required" });
+    await User.findByIdAndUpdate(req.user.id, { pushToken });
+    res.json({ message: "Push token saved successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// CLEAR PUSH TOKEN ON LOGOUT
+router.post("/clear-token", auth, async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.user.id, { pushToken: null });
+    res.json({ message: "Push token cleared" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // export default router;
 export default router;

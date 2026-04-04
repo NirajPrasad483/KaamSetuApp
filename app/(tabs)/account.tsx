@@ -1,6 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
+// ADD this with other imports at the top
+// import { registerForPushNotifications } from "../_layout";
+
 import {
   ActivityIndicator,
   Alert,
@@ -384,6 +387,17 @@ export default function AccountScreen() {
   );
 
   const handleLogout = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (token) {
+        await fetch(`${API_URL}/api/auth/clear-token`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+    } catch (err) {
+      console.log("Clear token error:", err);
+    }
     await AsyncStorage.removeItem("token");
     await AsyncStorage.removeItem("user");
     router.replace("/(auth)/login");

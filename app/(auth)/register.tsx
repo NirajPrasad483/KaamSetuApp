@@ -3,6 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Base_Url , API_BASE} from "../../constants/Config";
+import { registerForPushNotifications } from "../../backend/utils/notifications";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -171,6 +172,9 @@ export default function Register() {
       }
 
       setPopup("Registered Successfully ✅");
+
+      await registerForPushNotifications();
+
 
       router.replace("/(auth)/login");
     } catch (err) {
