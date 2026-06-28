@@ -2,16 +2,23 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
+import { Base_Url , API_BASE} from "../../constants/Config";
 import {
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
+import Popup from "../../components/Popup";
 
 export default function ForgotPassword() {
+  const [sendingOtp, setSendingOtp] = useState(false);
   const [email, setEmail] = useState("");
+  const parts = email.split("@");
   const [otp, setOtp] = useState(["", "", "", ""]);
   const inputs = useRef<Array<TextInput | null>>([]);
 
@@ -24,32 +31,57 @@ export default function ForgotPassword() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const [error, setError] = useState("");
+  const [popup, setPopup] = useState("");
 
   useEffect(() => {
     inputs.current[0]?.focus();
   }, []);
 
-  // OTP send
-  const handleSendOTP = () => {
-    if (!email.includes("@")) {
-      setError("Enter valid email");
-      return;
-    }
-
-    setError("");
-    alert("OTP sent 📩");
-
-    setTimer(30);
+  // ✅ TIMER LOGIC
+  useEffect(() => {
+    if (timer <= 0) return;
 
     const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
+      setTimer((prev) => prev - 1);
     }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  // ✅ SEND OTP
+  const handleSendOTP = async () => {
+    try {
+      if (parts.length !== 2 || !parts[1].includes(".")) {
+        setError("Enter valid email with domain");
+        return;
+      }
+      setSendingOtp(true); // 🔥 START
+
+      const res = await fetch(`${API_BASE}/auth/send-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message);
+        return;
+      }
+
+      setError("");
+      setPopup("OTP sent 📩");
+
+      setTimer(30);
+    } catch (err) {
+      console.log(err);
+      setError("Error sending OTP");
+    } finally {
+      setSendingOtp(false); // 🔥 STOP
+    }
   };
 
   // OTP input
@@ -69,33 +101,65 @@ export default function ForgotPassword() {
     }
   };
 
-  // Reset password
-  const handleReset = () => {
-    const finalOtp = otp.join("");
+  // ✅ RESET PASSWORD
+  const handleReset = async () => {
+    console.log("RESET BUTTON CLICKED");
+    try {
+      const finalOtp = otp.join("");
+      console.log("OTP:", finalOtp);
+      console.log("Password:", password);
+      console.log("Confirm:", confirm);
+      if (otp.some((digit) => digit === "")) {
+        setError("Fill all OTP boxes");
+        return;
+      }
 
-    if (otp.some((digit) => digit === "")) {
-      setError("Fill all OTP boxes");
-      return;
+      if (password !== confirm) {
+        setError("Passwords do not match");
+        return;
+      }
+
+      if (password.length < 4) {
+        setError("Password must be at least 4 characters");
+        return;
+      }
+      console.log("API CALL START");
+      const res = await fetch(
+        `${API_BASE}/auth/reset-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            otp: finalOtp,
+            newPassword: password,
+          }),
+        },
+      );
+
+      const data = await res.json();
+      console.log("RESPONSE:", data);
+      if (!res.ok) {
+        setError(data.message);
+        return;
+      }
+
+      setError("");
+      setPopup("Password reset successful ✅");
+
+      router.replace("/(auth)/login");
+    } catch (err) {
+      console.log(err);
+      setError("Server error");
     }
-
-    if (password !== confirm) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    if (password.length < 4) {
-      setError("Password must be at least 4 characters");
-      return;
-    }
-
-    setError("");
-    alert("Password reset successful ✅");
-
-    router.replace("/login");
   };
 
   return (
-    <LinearGradient colors={["#6c4ef6", "#4a6cf7"]} style={styles.container}>
+    <LinearGradient colors={["#1A3C5E", "#4a6cf7"]} style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 20, justifyContent: "center" }} keyboardShouldPersistTaps="handled">
       <Text style={styles.logo}>KaamSetu</Text>
       <Text style={styles.subtitle}>Reset your password securely</Text>
 
@@ -116,21 +180,37 @@ export default function ForgotPassword() {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.verifyBtn} onPress={handleSendOTP}>
-            <Text style={{ fontSize: 12 }}>Verify</Text>
+          <TouchableOpacity
+            style={[
+              styles.verifyBtn,
+              (timer > 0 || sendingOtp) && { opacity: 0.6 },
+            ]}
+            onPress={handleSendOTP}
+            disabled={timer > 0 || sendingOtp}
+          >
+            <Text style={{fontSize: 12, color: "#fff", fontWeight: "600"}}>
+              {sendingOtp
+                ? "Sending..."
+                : timer > 0
+                  ? "Send OTP"
+                  : "Send OTP"}
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Timer / Resend */}
+        {/* Timer */}
         {timer > 0 ? (
           <Text style={styles.timerText}>Resend OTP in {timer}s</Text>
         ) : (
-          <TouchableOpacity onPress={handleSendOTP}>
+          <TouchableOpacity
+            onPress={handleSendOTP}
+            disabled={timer > 0 || sendingOtp}
+          >
             <Text style={styles.resendText}>Resend OTP</Text>
           </TouchableOpacity>
         )}
 
-        {/* OTP BOXES */}
+        {/* OTP */}
         <Text style={styles.label}>Enter OTP</Text>
 
         <View style={styles.otpContainer}>
@@ -191,16 +271,25 @@ export default function ForgotPassword() {
 
         {/* Button */}
         <TouchableOpacity onPress={handleReset}>
-          <LinearGradient colors={["#6c4ef6", "#4a6cf7"]} style={styles.button}>
+          <LinearGradient colors={["#1A3C5E", "#1A3C5E"]} style={styles.button}>
             <Text style={styles.buttonText}>Reset Password</Text>
           </LinearGradient>
         </TouchableOpacity>
 
-        <Text style={styles.link} onPress={() => router.replace("/login")}>
+        <Text
+          style={styles.link}
+          onPress={() => router.replace("/(auth)/login")}
+        >
           Back to Login
         </Text>
       </View>
-    </LinearGradient>
+      <Popup
+        message={popup}
+        onClose={() => setPopup("")}
+      />
+    </ScrollView>
+    </KeyboardAvoidingView>
+  </LinearGradient>
   );
 }
 
@@ -232,12 +321,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 
-  desc: {
-    textAlign: "center",
-    marginBottom: 10,
-    color: "#555",
-  },
-
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -260,7 +343,7 @@ const styles = StyleSheet.create({
   verifyBtn: {
     marginLeft: 10,
     padding: 10,
-    backgroundColor: "#ddd",
+    backgroundColor : "#ff9800",
     borderRadius: 8,
   },
 
@@ -287,6 +370,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: "#555",
   },
+
   otpContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -306,13 +390,13 @@ const styles = StyleSheet.create({
   timerText: {
     textAlign: "center",
     marginTop: 5,
-    color: "#555",
+    color: "#1A3C5E",
   },
 
   resendText: {
     textAlign: "center",
     marginTop: 5,
-    color: "#4a6cf7",
+    color: "#1A3C5E",
   },
 
   label: {

@@ -1,31 +1,46 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { registerForPushNotifications } from "../../backend/utils/notifications";
+import Popup from "../../components/Popup";
+import { API_BASE } from "../../constants/Config";
 
 export default function Register() {
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [isWorker, setIsWorker] = useState(false);
+  const [role, setRole] = useState("user");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const parts = email.split("@");
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [timer, setTimer] = useState(0);
-
+  const [popup, setPopup] = useState("");
+  const [phoneOtp, setPhoneOtp] = useState(["", "", "", ""]);
+  const [phoneOtpInputs, setPhoneOtpInputs] = useState<Array<any>>([]);
+  const [sendingPhoneOtp, setSendingPhoneOtp] = useState(false);
+  const [phoneTimer, setPhoneTimer] = useState(0);
   // 🔥 TAG SYSTEM
   const [tagInput, setTagInput] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showList, setShowList] = useState(false);
 
   const inputs = useRef<Array<TextInput | null>>([]);
+  const phoneInputs = useRef<Array<TextInput | null>>([]);
   const suggestions = [
     "Electrician",
     "Plumber",
@@ -50,6 +65,28 @@ export default function Register() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    let interval: any;
+
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  useEffect(() => {
+    let interval: any;
+    if (phoneTimer > 0) {
+      interval = setInterval(() => {
+        setPhoneTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [phoneTimer]);
+
   const handleChange = (value: string, index: number) => {
     let newOtp = [...otp];
     newOtp[index] = value;
@@ -67,225 +104,471 @@ export default function Register() {
   };
 
   // OTP
-  const handleSendOTP = () => {
-    if (!email.includes("@")) {
-      setError("Enter valid email");
-      return;
-    }
-
-    setError("");
-    alert("OTP sent 📩");
-
-    setTimer(30); // start timer
-
-    const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
+  const handleSendOTP = async () => {
+    try {
+      if (parts.length !== 2 || !parts[1].includes(".")) {
+        setError("Enter valid email with domain");
+        return;
+      }
+      setSendingOtp(true); // 🔥 START LOADING
+      const res = await fetch(`${API_BASE}/auth/send-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
       });
-    }, 1000);
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message);
+        return;
+      }
+
+      setPopup("OTP sent to email 📩");
+
+      setTimer(30);
+    } catch (err) {
+      console.log(err);
+      setError("Error sending OTP");
+    } finally {
+      setSendingOtp(false); // 🔥 STOP LOADING
+    }
   };
 
-  const handleRegister = () => {
-    if (!name || !email || !password || !confirm || !phone) {
-      setError("Fill all required fields");
-      return;
+  const handlePhoneOtpChange = (value: string, index: number) => {
+    const newOtp = [...phoneOtp];
+    newOtp[index] = value;
+    setPhoneOtp(newOtp);
+    if (value && index < 3) {
+      phoneInputs.current[index + 1]?.focus();
     }
+  };
 
-    if (password !== confirm) {
-      setError("Passwords do not match");
-      return;
+  const handlePhoneOtpKeyPress = (key: string, index: number) => {
+    if (key === "Backspace" && index > 0 && !phoneOtp[index]) {
+      phoneInputs.current[index - 1]?.focus();
     }
+  };
 
-    const finalOtp = otp.join("");
-    if (!/^\d{4}$/.test(finalOtp)) {
-      setError("Enter valid 4-digit OTP");
-      return;
+  const handleSendPhoneOTP = async () => {
+    try {
+      if (phone.length !== 10 || !/^[6-9]\d{9}$/.test(phone)) {
+        setError("Enter a valid 10-digit mobile number first");
+        return;
+      }
+      setSendingPhoneOtp(true);
+      const res = await fetch(`${API_BASE}/auth/send-phone-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message);
+        return;
+      }
+      setPopup("OTP sent to your phone 📱");
+      setPhoneTimer(30);
+    } catch (err) {
+      setError("Error sending phone OTP");
+    } finally {
+      setSendingPhoneOtp(false);
     }
+  };
 
-    setError("");
-    alert("Registered Successfully ✅");
-    router.replace("/login");
+  const handleRegister = async () => {
+    try {
+      if (!name || !email || !password || !confirm || !phone) {
+        setError("Fill all required fields");
+        return;
+      }
+
+      if (
+        !/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@$!%*?&#^()_\-+=])[A-Za-z0-9@$!%*?&#^()_\-+=]{8,}$/.test(
+          password,
+        )
+      ) {
+        setError(
+          "Password must be 8+ chars with uppercase, lowercase, number & special char (@$!%*?&#)",
+        );
+        return;
+      }
+
+      if (password !== confirm) {
+        setError("Passwords do not match");
+        return;
+      }
+
+      if (phone.length !== 10) {
+        setError("Phone number must be exactly 10 digits");
+        return;
+      }
+
+      const finalOtp = otp.join("");
+
+      if (!/^\d{4}$/.test(finalOtp)) {
+        setError("Enter valid OTP");
+        return;
+      }
+
+      const finalPhoneOtp = phoneOtp.join("");
+      if (!/^\d{4}$/.test(finalPhoneOtp)) {
+        setError("Enter valid Phone OTP");
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          password,
+          address,
+          skills: isWorker ? selectedTags : [],
+          role: isWorker ? "worker" : "user",
+          otp: finalOtp,
+          phoneOtp: finalPhoneOtp,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message);
+        return;
+      }
+
+      setPopup("Registered Successfully ✅");
+
+      await registerForPushNotifications();
+
+      router.replace("/(auth)/login");
+    } catch (err) {
+      console.log(err);
+      setError("Server error");
+    }
   };
 
   return (
-    <LinearGradient colors={["#6c4ef6", "#4a6cf7"]} style={styles.container}>
-      <Text style={styles.logo}>KaamSetu</Text>
-      <Text style={styles.subtitle}>Connecting Workers with Opportunities</Text>
-
-      <View style={styles.card}>
-        <Text style={styles.title}>Create Your Account</Text>
-
-        {/* Name */}
-        <Input
-          icon="person-outline"
-          placeholder="Full Name"
-          value={name}
-          onChange={setName}
-        />
-
-        {/* Email + OTP */}
-        <View style={styles.row}>
-          <View style={{ flex: 1 }}>
-            <Input
-              icon="mail-outline"
-              placeholder="Email"
-              value={email}
-              onChange={setEmail}
-            />
-          </View>
-
-          <TouchableOpacity style={styles.otpBtn} onPress={handleSendOTP}>
-            <Text style={{ fontSize: 12 }}>Verify OTP</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* resend OTP */}
-        {timer > 0 ? (
-          <Text style={{ textAlign: "center", marginTop: 5 }}>
-            Resend OTP in {timer}s
+    <LinearGradient colors={["#0F1C2E", "#1A3C5E"]} style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, padding: 20 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={styles.logo}>KaamSetu</Text>
+          <Text style={styles.subtitle}>
+            Connecting Workers with Opportunities
           </Text>
-        ) : (
-          <TouchableOpacity onPress={handleSendOTP}>
-            <Text
-              style={{ textAlign: "center", color: "#4a6cf7", marginTop: 5 }}
-            >
-              Resend OTP
-            </Text>
-          </TouchableOpacity>
-        )}
 
-        {/* OTP */}
-        <Text style={styles.label}>Enter OTP</Text>
+          <View style={styles.card}>
+            <Text style={styles.title}>Create Your Account</Text>
 
-        <View style={styles.otpContainer}>
-          {otp.map((digit, index) => (
-            <TextInput
-              key={index}
-              ref={(ref) => {
-                inputs.current[index] = ref;
-              }}
-              style={styles.otpBox}
-              keyboardType="numeric"
-              maxLength={1}
-              value={digit}
-              onChangeText={(value) => handleChange(value, index)}
-              onKeyPress={({ nativeEvent }) =>
-                handleKeyPress(nativeEvent.key, index)
-              }
+            {/* Name */}
+            <Input
+              icon="person-outline"
+              placeholder="Full Name"
+              value={name}
+              onChange={setName}
             />
-          ))}
-        </View>
 
-        {/* Password */}
-        <PasswordInput
-          value={password}
-          onChange={setPassword}
-          show={showPassword}
-          toggle={() => setShowPassword(!showPassword)}
-          placeholder="Set Password"
-        />
-
-        {/* Confirm */}
-        <PasswordInput
-          value={confirm}
-          onChange={setConfirm}
-          show={showConfirm}
-          toggle={() => setShowConfirm(!showConfirm)}
-          placeholder="Confirm Password"
-        />
-
-        {/* Address */}
-        <Input
-          icon="location-outline"
-          placeholder="Address (Optional)"
-          value={address}
-          onChange={setAddress}
-        />
-
-        {/* 🔥 MULTI TAG INPUT */}
-        <Text style={styles.label}>Worker Tags</Text>
-
-        {/* Default suggestions always visible */}
-        <View style={styles.tagContainer}>
-          {suggestions.map((item) => (
-            <TouchableOpacity
-              key={item}
-              style={[
-                styles.tag,
-                selectedTags.includes(item) && { backgroundColor: "#4a6cf7" },
-              ]}
-              onPress={() => addTag(item)}
+            {/* Worker Checkbox */}
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: 10,
+              }}
             >
-              <Text style={{ color: "#fff" }}>{item}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Selected tags */}
-        <View style={styles.tagContainer}>
-          {selectedTags.map((tag) => (
-            <View key={tag} style={styles.tag}>
-              <Text style={{ color: "#fff" }}>{tag}</Text>
-              <Text style={styles.remove} onPress={() => removeTag(tag)}>
-                {" "}
-                ✕{" "}
-              </Text>
+              <TouchableOpacity
+                onPress={() => setIsWorker(!isWorker)}
+                style={{ marginRight: 10 }}
+              >
+                <Ionicons
+                  name={isWorker ? "checkbox" : "square-outline"}
+                  size={22}
+                  color="#1A3C5E"
+                />
+              </TouchableOpacity>
+              <Text>Register as a Worker</Text>
             </View>
-          ))}
-        </View>
 
-        {/* Custom input */}
-        <View style={styles.inputContainer}>
-          <Ionicons name="pricetag-outline" size={20} />
-          <TextInput
-            placeholder="Add your own skill"
-            style={styles.input}
-            value={tagInput}
-            onChangeText={setTagInput}
-            onSubmitEditing={() => addTag(tagInput)}
-          />
-        </View>
+            {/* Email + OTP */}
+            <View style={styles.row}>
+              <View style={{ flex: 1 }}>
+                <Input
+                  icon="mail-outline"
+                  placeholder="Email"
+                  value={email}
+                  onChange={setEmail}
+                />
+              </View>
 
-        {/* Phone */}
-        <Input
-          icon="call-outline"
-          placeholder="Phone Number"
-          value={phone}
-          onChange={setPhone}
-        />
+              <TouchableOpacity
+                style={[
+                  styles.otpBtn,
+                  (timer > 0 || sendingOtp) && { opacity: 0.6 },
+                ]}
+                onPress={handleSendOTP}
+                disabled={timer > 0 || sendingOtp}
+              >
+                <Text
+                  style={{ fontSize: 12, color: "#fff", fontWeight: "600" }}
+                >
+                  {sendingOtp
+                    ? "Sending..."
+                    : timer > 0
+                      ? "Send OTP"
+                      : "Send OTP"}
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-        {/* Error */}
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+            {/* Resend OTP */}
+            {timer > 0 ? (
+              <Text
+                style={{ textAlign: "center", marginTop: 5, color: "#1A3C5E" }}
+              >
+                Resend OTP in {timer}s
+              </Text>
+            ) : (
+              <TouchableOpacity onPress={handleSendOTP}>
+                <Text
+                  style={{
+                    textAlign: "center",
+                    color: "#1A3C5E",
+                    marginTop: 5,
+                  }}
+                >
+                  Resend OTP
+                </Text>
+              </TouchableOpacity>
+            )}
 
-        {/* Register */}
-        <TouchableOpacity onPress={handleRegister}>
-          <LinearGradient colors={["#6c4ef6", "#4a6cf7"]} style={styles.button}>
-            <Text style={styles.buttonText}>Register</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            {/* OTP */}
+            <Text style={styles.label}>Enter OTP</Text>
 
-        <Text style={styles.footer}>
-          By registering, you agree to Terms & Privacy Policy
-        </Text>
-      </View>
+            <View style={styles.otpContainer}>
+              {otp.map((digit, index) => (
+                <TextInput
+                  key={index}
+                  ref={(ref) => {
+                    inputs.current[index] = ref;
+                  }}
+                  style={styles.otpBox}
+                  keyboardType="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChangeText={(value) => handleChange(value, index)}
+                  onKeyPress={({ nativeEvent }) =>
+                    handleKeyPress(nativeEvent.key, index)
+                  }
+                />
+              ))}
+            </View>
+
+            {/* Password */}
+            <PasswordInput
+              value={password}
+              onChange={setPassword}
+              show={showPassword}
+              toggle={() => setShowPassword(!showPassword)}
+              placeholder="Set Password"
+            />
+
+            <PasswordInput
+              value={confirm}
+              onChange={setConfirm}
+              show={showConfirm}
+              toggle={() => setShowConfirm(!showConfirm)}
+              placeholder="Confirm Password"
+            />
+
+            {/* Address */}
+            <Input
+              icon="location-outline"
+              placeholder="Address (Optional)"
+              value={address}
+              onChange={setAddress}
+            />
+
+            {/* Worker Tags (only if worker) */}
+            {isWorker && (
+              <>
+                <Text style={styles.label}>Worker Tags</Text>
+
+                <View style={styles.tagContainer}>
+                  {suggestions.map((item) => (
+                    <TouchableOpacity
+                      key={item}
+                      style={[
+                        styles.tag,
+                        selectedTags.includes(item) && {
+                          backgroundColor: "#1A3C5E",
+                        },
+                      ]}
+                      onPress={() => addTag(item)}
+                    >
+                      <Text style={{ color: "#fff" }}>{item}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <View style={styles.tagContainer}>
+                  {selectedTags.map((tag) => (
+                    <View key={tag} style={styles.tag}>
+                      <Text style={{ color: "#fff" }}>{tag}</Text>
+                      <Text
+                        style={styles.remove}
+                        onPress={() => removeTag(tag)}
+                      >
+                        ✕
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+
+                <View style={styles.inputContainer}>
+                  <Ionicons name="pricetag-outline" size={20} color="#777" />
+
+                  <TextInput
+                    placeholder="Add your own skill"
+                    placeholderTextColor="#888"
+                    style={[styles.input, { flex: 1 }]}
+                    value={tagInput}
+                    onChangeText={setTagInput}
+                  />
+
+                  <TouchableOpacity
+                    onPress={() => addTag(tagInput)}
+                    style={{ paddingHorizontal: 6 }}
+                  >
+                    <Ionicons name="add" size={24} color="#777" />
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+
+            {/* Phone */}
+            <View style={styles.row}>
+              <View style={{ flex: 1 }}>
+                <Input
+                  icon="call-outline"
+                  placeholder="Phone Number"
+                  value={phone}
+                  onChange={setPhone}
+                  numeric
+                />
+              </View>
+              <TouchableOpacity
+                style={[
+                  styles.otpBtn,
+                  (phoneTimer > 0 || sendingPhoneOtp) && { opacity: 0.6 },
+                ]}
+                onPress={handleSendPhoneOTP}
+                disabled={phoneTimer > 0 || sendingPhoneOtp}
+              >
+                <Text
+                  style={{ fontSize: 12, color: "#fff", fontWeight: "600" }}
+                >
+                  {sendingPhoneOtp ? "Sending..." : "Send OTP"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {phoneTimer > 0 ? (
+              <Text
+                style={{ textAlign: "center", marginTop: 5, color: "#1A3C5E" }}
+              >
+                Resend in {phoneTimer}s
+              </Text>
+            ) : (
+              <TouchableOpacity onPress={handleSendPhoneOTP}>
+                <Text
+                  style={{
+                    textAlign: "center",
+                    color: "#1A3C5E",
+                    marginTop: 5,
+                  }}
+                >
+                  Resend Phone OTP
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            <Text style={styles.label}>Enter Phone OTP</Text>
+            <View style={styles.otpContainer}>
+              {phoneOtp.map((digit, index) => (
+                <TextInput
+                  key={index}
+                  ref={(ref) => {
+                    phoneInputs.current[index] = ref;
+                  }}
+                  style={styles.otpBox}
+                  keyboardType="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChangeText={(value) => handlePhoneOtpChange(value, index)}
+                  onKeyPress={({ nativeEvent }) =>
+                    handlePhoneOtpKeyPress(nativeEvent.key, index)
+                  }
+                />
+              ))}
+            </View>
+
+            {/* Error */}
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+
+            {/* Register */}
+            <TouchableOpacity onPress={handleRegister}>
+              <LinearGradient
+                colors={["#1A3C5E", "#2A5298"]}
+                style={styles.button}
+              >
+                <Text style={styles.buttonText}>Register</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <Text style={styles.footer}>
+              By registering, you agree to Terms & Privacy Policy
+            </Text>
+          </View>
+        </ScrollView>
+        <Popup message={popup} onClose={() => setPopup("")} />
+      </KeyboardAvoidingView>
     </LinearGradient>
   );
 }
 
 /* 🔥 Reusable */
 
-const Input = ({ icon, placeholder, value, onChange }: any) => (
+const Input = ({ icon, placeholder, value, onChange, numeric }: any) => (
   <View style={styles.inputContainer}>
     <Ionicons name={icon} size={20} />
     <TextInput
       placeholder={placeholder}
       style={styles.input}
       value={value}
-      onChangeText={onChange}
+      keyboardType={numeric ? "numeric" : "default"}
+      maxLength={numeric ? 10 : undefined}
+      onChangeText={(text) => {
+        if (numeric) {
+          const filtered = text.replace(/[^0-9]/g, "");
+          onChange(filtered);
+        } else {
+          onChange(text);
+        }
+      }}
     />
   </View>
 );
@@ -311,7 +594,11 @@ const PasswordInput = ({ value, onChange, show, toggle, placeholder }: any) => (
 /* 🎨 Styles */
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 20 },
+  container: {
+    flexGrow: 1,
+    padding: 20,
+    justifyContent: "center",
+  },
 
   logo: {
     fontSize: 34,
@@ -361,7 +648,7 @@ const styles = StyleSheet.create({
   otpBtn: {
     marginLeft: 10,
     padding: 10,
-    backgroundColor: "#ddd",
+    backgroundColor: "#ff9800",
     borderRadius: 8,
   },
 
@@ -402,7 +689,7 @@ const styles = StyleSheet.create({
 
   tag: {
     flexDirection: "row",
-    backgroundColor: "#6c4ef6",
+    backgroundColor: "#1A3C5E",
     padding: 6,
     borderRadius: 10,
     marginRight: 5,
@@ -441,4 +728,55 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 18,
   },
+  roleBtn: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: "#ddd",
+    marginRight: 5,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+
+  activeRole: {
+    backgroundColor: "#1A3C5E",
+  },
+
+  // popup: {
+  //   position: "absolute",
+  //   top: "40%",
+  //   left: 20,
+  //   right: 20,
+  //   backgroundColor: "#1A3C5E",
+  //   padding: 20,
+  //   borderRadius: 15,
+  //   alignItems: "center",
+  //   elevation: 5,
+  // },
+
+  // popup: {
+  //   position: "absolute",
+  //   top: 0,
+  //   left: 0,
+  //   right: 0,
+  //   bottom: 0,
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  //   backgroundColor: "rgba(0,0,0,0.3)", // dark overlay
+  // },
+
+  // popupBox: {
+  //   backgroundColor: "#1A3C5E",
+  //   padding: 20,
+  //   borderRadius: 15,
+  //   width: "80%",
+  //   alignItems: "center",
+  //   elevation: 5,
+  // },
+
+  // popupText: {
+  //   fontSize: 16,
+  //   fontWeight: "600",
+  //   color: "#fff",
+  //   textAlign: "center",
+  // },
 });
