@@ -8,6 +8,7 @@ node_modules/
 dist/
 web-build/
 expo-env.d.ts
+backend/uploads/
 
 # Native
 .kotlin/
@@ -27,6 +28,7 @@ yarn-debug.*
 yarn-error.*
 
 # macOS
+#changes
 .DS_Store
 *.pem
 
@@ -43,3 +45,6 @@ app-example
 /android
 
 backend/.env
+backend/node_modules/
+node_modules/
+backend/uploads/

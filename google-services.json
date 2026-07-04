@@ -1,0 +1,29 @@
+{
+    "project_info": {
+      "project_number": "911250589038",
+      "project_id": "kaamsetu-56bc4",
+      "storage_bucket": "kaamsetu-56bc4.firebasestorage.app"
+    },
+    "client": [
+      {
+        "client_info": {
+          "mobilesdk_app_id": "1:911250589038:android:b843ecc36eddefc7702d7f",
+          "android_client_info": {
+            "package_name": "com.kaamsetu.app"
+          }
+        },
+        "oauth_client": [],
+        "api_key": [
+          {
+            "current_key": "AIzaSyDLRTq9LqSYN_aY-AkS3lpUO04J46hk2gc"
+          }
+        ],
+        "services": {
+          "appinvite_service": {
+            "other_platform_oauth_client": []
+          }
+        }
+      }
+    ],
+    "configuration_version": "1"
+  }

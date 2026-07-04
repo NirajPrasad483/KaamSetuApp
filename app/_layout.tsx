@@ -1,21 +1,20 @@
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// This is the ROOT layout. It wraps every screen in the app.
-//
-// HOW AUTH REDIRECT WORKS:
-//   1. We check if user is "logged in" (currently mocked as true).
-//   2. If NOT logged in → redirect to /login
-//   3. If logged in → redirect to /(tabs) (the main tab bar)
-//
-// When you connect a real backend, replace `isLoggedIn` with a check
-// against your auth state (e.g. AsyncStorage token, Zustand store, etc.)
-// ─────────────────────────────────────────────────────────────────────────────
-
-// MOCK (later replace with real auth)
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState } from "react";
+import * as Notifications from "expo-notifications";  // ✅ ADDED
+import { SafeAreaProvider } from "react-native-safe-area-context";
+
+// ✅ ADDED
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 function AuthGuard() {
   const segments = useSegments();
@@ -26,15 +25,13 @@ function AuthGuard() {
   useEffect(() => {
     const checkLogin = async () => {
       const token = await AsyncStorage.getItem("token");
-
       setIsLoggedIn(Boolean(token));
     };
-
     checkLogin();
   }, [segments]);
 
   useEffect(() => {
-    if (isLoggedIn === null) return; // ⛔ wait
+    if (isLoggedIn === null) return;
 
     const inAuthGroup = segments[0] === "(auth)";
 
@@ -53,6 +50,7 @@ function AuthGuard() {
 export default function RootLayout() {
   return (
     <>
+      <SafeAreaProvider>
       <AuthGuard />
 
       <Stack screenOptions={{ headerShown: false }}>
@@ -70,7 +68,8 @@ export default function RootLayout() {
         <Stack.Screen name="view-status/[jobId]" />
         <Stack.Screen name="referrals" />
         <Stack.Screen name="applications" />
-      </Stack>
+        </Stack>
+        </SafeAreaProvider>
     </>
   );
 }
